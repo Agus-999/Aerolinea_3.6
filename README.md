@@ -1,58 +1,109 @@
-# ✈️ Proyecto Django: Aerolíneas Voladoras
+# 🏠 Etapa 2: Creación de la app home y estructura base de la web
 
-## 🛫 Etapa 1: Creación del proyecto y conexión con base de datos
+## 🧩 Creación de la app principal (home)
 
----
+Creamos una nueva app dentro del proyecto Django para manejar la parte principal del sitio:
 
-### 1. 🧱 Creación del entorno virtual
-Creamos y activamos un entorno virtual para aislar dependencias del proyecto:
+python manage.py startapp home
+🧠 Registro de la app en Django
+Agregamos 'home' a la lista de INSTALLED_APPS en el archivo settings.py:
 
-    python -m venv venv
-    venv\Scripts\activate  # En Windows
+python
+Copiar código
+INSTALLED_APPS = [
+    ...
+    'home',
+]
+🌐 Configuración de rutas
+En ChatProject/urls.py, incluimos las URLs de la app home:
 
+python
+Copiar código
+from django.contrib import admin
+from django.urls import path, include
 
-### 2. ⚙️ Instalación de Django
-Instalamos Django dentro del entorno virtual:
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('home.urls')),
+]
+Creamos el archivo home/urls.py con la ruta base para la vista de inicio:
 
-    pip install django
+python
+Copiar código
+from django.urls import path
+from . import views
 
-### 3. 📁 Creación del proyecto base
-Creamos el proyecto Django en la raíz actual (evitando guiones, que pueden causar problemas en Python):
+urlpatterns = [
+    path('', views.inicio, name='inicio'),
+]
+🖼️ Creación de vistas y plantillas
+En home/views.py, definimos la vista inicio:
 
-    django-admin startproject aerolinea_voladora .
+python
+Copiar código
+from django.shortcuts import render
 
-### 4. 🗄️ Conexión con la base de datos existente
-Ya contábamos con una base de datos SQLite llamada:
+def inicio(request):
+    return render(request, 'inicio.html')
+Creamos la carpeta templates/ dentro de la app home y las siguientes plantillas:
 
-    aerolineas_voladoras.sqlite3
+arduino
+Copiar código
+home/
+└── templates/
+    ├── base.html
+    └── inicio.html
+base.html
+html
+Copiar código
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Anónimo</title>
+</head>
+<body>
+    {% block contenido %}
+    {% endblock %}
+</body>
+</html>
+inicio.html
+django
+Copiar código
+{% extends 'base.html' %}
 
-### ✅ La colocamos en la raíz del proyecto, junto a manage.py.
+{% block contenido %}
+    <h1>Bienvenido al Chat Anónimo</h1>
+{% endblock %}
+✅ Verificación del funcionamiento
+Ejecutamos el servidor de desarrollo para comprobar que la vista de inicio carga correctamente:
 
-### 🔧 Luego, editamos settings.py para usarla:
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "aerolineas_voladoras.sqlite3",
-    }
-}
-
-### 5. ✅ Verificación del proyecto
-Aplicamos las migraciones iniciales de Django para asegurarnos de que todo está bien conectado:
-
-### 📁 Estructura actual del proyecto
-
-aerolinea_voladora/
-├── aerolinea_voladora/
+bash
+Copiar código
+python manage.py runserver
+🗂️ Estructura actual del proyecto
+markdown
+Copiar código
+chat-anonimo/
+├── ChatProject/
 │   ├── __init__.py
 │   ├── asgi.py
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
-├── aerolineas_voladoras.sqlite3
+├── home/
+│   ├── migrations/
+│   ├── templates/
+│   │   ├── base.html
+│   │   └── inicio.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
 ├── manage.py
-├── requirements.txt  # (Podés generarlo luego con `pip freeze > requirements.txt`)
 └── venv/
-
-### ✍️ Autor
-    Agustín Alejandro Fasano
+✍️ Autor
+Agustín Alejandro Fasano
