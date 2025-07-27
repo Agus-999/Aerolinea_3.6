@@ -5,22 +5,21 @@
     <title>{% block title %}Aerolínea{% endblock %}</title>
 </head>
 <body>
-
-<header>
-    <h1>Aerolínea</h1>
     <nav>
-        <a href="/">Inicio</a>
+        <a href="{% url 'inicio' %}">Inicio</a> |
+        
+        {% if user.is_authenticated %}
+            <p>Hola, {{ user.username }} ({{ user.rol }})</p>
+            <a href="{% url 'logout' %}">Cerrar sesión</a>
+        {% else %}
+            <a href="{% url 'login' %}">Iniciar sesión</a> |
+            <a href="{% url 'register' %}">Registrarse</a>
+        {% endif %}
     </nav>
-</header>
 
-<main>
+    <hr>
+
     {% block content %}
     {% endblock %}
-</main>
-
-<footer>
-    &copy; 2025 Aerolínea. Todos los derechos reservados.
-</footer>
-
 </body>
 </html>
