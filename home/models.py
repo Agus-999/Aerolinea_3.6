@@ -7,7 +7,11 @@ class Usuario(AbstractUser):
         ('empleado', 'Empleado'),
         ('cliente', 'Cliente'),
     )
-    rol = models.CharField(max_length=10, choices=ROL_CHOICES, default='cliente')
+    rol = models.CharField(
+        max_length=10,
+        choices=ROL_CHOICES,
+        default='cliente'
+    )
 
     def __str__(self):
         return f"{self.username} ({self.rol})"
