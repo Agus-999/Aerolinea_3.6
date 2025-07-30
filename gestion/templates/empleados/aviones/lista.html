@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Lista de Aviones</h2>
+<a href="{% url 'gestion:nuevo_avion' %}">Agregar Avión</a>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Modelo</th>
+            <th>Capacidad</th>
+            <th>Filas</th>
+            <th>Columnas</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for avion in aviones %}
+            <tr>
+                <td>{{ avion.modelo }}</td>
+                <td>{{ avion.capacidad }}</td>
+                <td>{{ avion.filas }}</td>
+                <td>{{ avion.columnas }}</td>
+                <td>
+                    <a href="{% url 'gestion:editar_avion' avion.pk %}">Editar</a> |
+                    <a href="{% url 'gestion:eliminar_avion' avion.pk %}">Eliminar</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">No hay aviones registrados.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

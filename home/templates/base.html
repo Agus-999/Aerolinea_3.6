@@ -9,10 +9,14 @@
         <a href="{% url 'inicio' %}">Inicio</a> |
         
         {% if user.is_authenticated %}
-            
             {% if user.rol == "admin" %}
                 <a href="{% url 'admin:index' %}">Panel Admin</a> |
-            {% endif %}|
+            {% endif %}
+
+            {% if user.rol == "empleado" %}
+                <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a>
+            {% endif %}
+            
             <a href="{% url 'logout' %}">Cerrar sesión</a>
         {% else %}
             <a href="{% url 'login' %}">Iniciar sesión</a> |
@@ -21,7 +25,7 @@
     </nav>
     
     {% if user.is_authenticated %}
-            <p>Hola, {{ user.username }} ({{ user.rol }})</p>
+        <p>Hola, {{ user.username }} ({{ user.rol }})</p>
     {% endif %}
 
     {% block content %}

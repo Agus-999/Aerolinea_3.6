@@ -1,104 +1,107 @@
-# 🛡️ Etapa 3 - Subetapa 2: Acceso de Administrador - Sistema de Gestión de Vuelos ✈️
+✈️ Etapa 4 - Subetapa 1: Gestión de Aviones - Portal para Empleados 🧑‍✈️
+En esta subetapa se implementó una interfaz para que empleados autenticados puedan gestionar aviones desde el sistema. Esto incluye registrar, modificar, listar y eliminar aviones desde el panel web.
 
-Esta etapa mejora el sistema permitiendo que el **usuario con rol `admin`** tenga acceso completo al panel de administración de Django, y pueda gestionar todos los usuarios desde allí.
+🔐 Solo los usuarios con rol empleado pueden acceder a esta funcionalidad.
 
-🔐 Solo los usuarios autenticados y con rol `admin` podrán ver el enlace al panel administrativo.
+🛫 Escala del Proyecto
+Etapa 4: Funcionalidades por Rol
+├── 🟢 Subetapa 1: Gestión de Aviones (actual)
+└── 🔵 Subetapa 2: [pendiente]
 
----
+🎯 Objetivo de esta Subetapa
+Permitir a los empleados agregar, editar y eliminar aviones.
 
-## 📈 Escala del Proyecto
+Crear una sección con listado en tabla.
 
-Etapa 3: Sistema de Autenticación y Roles
-├── 🟢 Subetapa 1: Registro e Inicio de Sesión
-└── 🔵 Subetapa 2: Acceso de Administrador (actual)
+Asegurar que esta función solo esté disponible para usuarios con rol empleado.
 
-yaml
-Copiar
-Editar
+Agregar campos clave como modelo, capacidad, filas y columnas.
 
----
-
-## 🎯 Objetivo de esta Subetapa
-
-- Mostrar la opción de acceso al panel **/admin** solo a usuarios con rol `admin`.
-- Registrar correctamente el modelo personalizado `Usuario` en el admin.
-- Permitir gestión total de los usuarios desde el panel de administración.
-
----
-
-## 🧩 Cambios Realizados
-
-### 1️⃣ Modelo de Usuario con Rol (ya implementado)
-
-📄 `home/models.py`
-
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-
-class Usuario(AbstractUser):
-    ROL_CHOICES = (
-        ('admin', 'Administrador'),
-        ('empleado', 'Empleado'),
-        ('cliente', 'Cliente'),
-    )
-    rol = models.CharField(max_length=10, choices=ROL_CHOICES, default='cliente')
-
-    def __str__(self):
-        return f"{self.username} ({self.rol})"
-2️⃣ Registro del Modelo en el Panel de Administración
-📄 home/admin.py
+🛠️ Cambios Realizados
+🛩️ 1. Modelo Avion
+📄 gestion/models.py
 
 python
-Copiar
-Editar
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import Usuario
+Copiar código
+class Avion(models.Model):
+    modelo = models.CharField(max_length=100)
+    capacidad = models.PositiveIntegerField()
+    filas = models.PositiveIntegerField(default=1)
+    columnas = models.PositiveIntegerField(default=1)
 
-@admin.register(Usuario)
-class UsuarioAdmin(UserAdmin):
-    list_display = ['username', 'email', 'rol', 'is_superuser']
-    fieldsets = UserAdmin.fieldsets + (
-        ('Rol Personalizado', {'fields': ('rol',)}),
-    )
-Este registro permite que el admin tenga control total desde el panel.
+    def __str__(self):
+        return self.modelo
+🧾 2. Formulario de Aviones
+📄 gestion/forms.py
 
-3️⃣ Condicional en Template para Mostrar Enlace al Admin
+python
+Copiar código
+class AvionForm(forms.ModelForm):
+    class Meta:
+        model = Avion
+        fields = ['modelo', 'capacidad', 'filas', 'columnas']
+🧠 3. Lógica de Vistas
+📄 gestion/views.py
+Incluye lógica para listar, crear, editar y eliminar aviones.
+
+lista_aviones: muestra una tabla con los datos.
+
+avion_formulario: se reutiliza para crear y editar.
+
+eliminar_avion: confirma y elimina un avión.
+
+🌐 4. URLs para CRUD
+📄 gestion/urls.py
+
+python
+Copiar código
+urlpatterns = [
+    path('aviones/', views.lista_aviones, name='lista_aviones'),
+    path('aviones/nuevo/', views.avion_formulario, name='nuevo_avion'),
+    path('aviones/<int:pk>/editar/', views.avion_formulario, name='editar_avion'),
+    path('aviones/<int:pk>/eliminar/', views.eliminar_avion, name='eliminar_avion'),
+]
+🧑‍✈️ 5. Interfaz Web para Empleados
+📂 empleados/aviones/
+
+lista.html: muestra todos los aviones en una tabla.
+
+formulario.html: contiene el formulario para agregar o editar.
+
+eliminar.html: página de confirmación para eliminar.
+
+La navegación hacia esta sección solo se muestra si el usuario tiene el rol empleado.
+
+💼 6. Administración en Django
+📄 gestion/admin.py
+
+python
+Copiar código
+@admin.register(Avion)
+class AvionAdmin(admin.ModelAdmin):
+    list_display = ('modelo', 'capacidad', 'filas', 'columnas')
+    search_fields = ('modelo',)
+🧭 7. Integración en el Template Base
 📄 templates/base.html
 
-html
-Copiar
-Editar
-<nav>
-    <a href="{% url 'inicio' %}">Inicio</a> |
-
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">Cerrar sesión</a>
-
-        {% if user.rol == 'admin' %}
-            | <a href="/admin/">Panel Admin</a>
-        {% endif %}
-    {% else %}
-        <a href="{% url 'login' %}">Iniciar sesión</a> |
-        <a href="{% url 'register' %}">Registrarse</a>
-    {% endif %}
-</nav>
-
-{% if user.is_authenticated %}
-  <div style="padding: 1rem; background-color: #f0f0f0; text-align: right;">
-    <p>Hola, {{ user.username }} ({{ user.rol }})</p>
-  </div>
+django
+Copiar código
+{% if user.is_authenticated and user.rol == "empleado" %}
+    <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a> |
 {% endif %}
-🔎 De esta forma, el enlace al panel de administración es visible solo si el usuario tiene el rol 'admin'.
+Esto asegura que solo los empleados vean el acceso a la gestión de aviones.
 
-📂 Archivos Clave Modificados
-models.py → modelo Usuario con campo rol.
-
-admin.py → registro del modelo para gestión completa en Django Admin.
-
-base.html → condiciones para mostrar enlaces según autenticación y rol.
+🗂️ Archivos Clave Modificados
+Archivo	Descripción
+models.py	Define el modelo Avion
+views.py	Lógica CRUD para aviones
+forms.py	Formulario para aviones
+urls.py	Rutas para la gestión
+admin.py	Registro en el panel Django
+base.html	Control de acceso por rol
+templates/empleados/aviones/	Interfaz de usuario
 
 👨‍💼 Autor
 Agustín Fasano
-💻 Desarrollador de Software | Estudiante en ITEC
-📚 Proyecto académico de autenticación y control de usuarios en Django
+🎓 Estudiante ITEC | 💻 Desarrollador en formación
+📁 Proyecto académico de gestión aeronáutica con Django
