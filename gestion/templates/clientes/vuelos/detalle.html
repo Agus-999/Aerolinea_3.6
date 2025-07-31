@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Detalles del vuelo</h2>
+
+<style>
+    .detalle-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        background: #fff;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .detalle-img {
+        flex: 1;
+    }
+
+    .detalle-img img {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 10px;
+    }
+
+    .detalle-info {
+        flex: 2;
+    }
+
+    .detalle-info p {
+        margin: 8px 0;
+        font-size: 1rem;
+    }
+
+    .detalle-info strong {
+        display: inline-block;
+        width: 120px;
+    }
+
+    .btn-volver {
+        display: inline-block;
+        margin-top: 20px;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .btn-volver:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="detalle-container">
+    <div class="detalle-img">
+        {% if vuelo.avion.imagen %}
+            <img src="{{ vuelo.avion.imagen.url }}" alt="Imagen avión">
+        {% else %}
+            <img src="https://via.placeholder.com/400x250?text=Sin+Imagen" alt="Sin imagen">
+        {% endif %}
+    </div>
+    <div class="detalle-info">
+        <p><strong>Origen:</strong> {{ vuelo.origen }}</p>
+        <p><strong>Destino:</strong> {{ vuelo.destino }}</p>
+        <p><strong>Salida:</strong> {{ vuelo.fecha_salida }}</p>
+        <p><strong>Llegada:</strong> {{ vuelo.fecha_llegada }}</p>
+        <p><strong>Duración:</strong> {{ vuelo.duracion }}</p>
+        <p><strong>Estado:</strong> {{ vuelo.get_estado_display }}</p>
+        <hr>
+        <p><strong>Avión:</strong> {{ vuelo.avion.modelo }}</p>
+        <p><strong>Capacidad:</strong> {{ vuelo.avion.capacidad }}</p>
+        <p><strong>Filas:</strong> {{ vuelo.avion.filas }}</p>
+        <p><strong>Columnas:</strong> {{ vuelo.avion.columnas }}</p>
+        <p><strong>Precio:</strong> ${{ vuelo.precio_base }}</p>
+    </div>
+</div>
+
+<a href="{% url 'gestion:vuelos_clientes_lista' %}" class="btn-volver">Volver a la lista</a>
+{% endblock %}

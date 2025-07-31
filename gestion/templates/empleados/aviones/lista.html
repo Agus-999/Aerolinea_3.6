@@ -1,34 +1,89 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h2>Lista de Aviones</h2>
-<a href="{% url 'gestion:nuevo_avion' %}">Agregar Avión</a>
-<table border="1">
-    <thead>
-        <tr>
-            <th>Modelo</th>
-            <th>Capacidad</th>
-            <th>Filas</th>
-            <th>Columnas</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for avion in aviones %}
-            <tr>
-                <td>{{ avion.modelo }}</td>
-                <td>{{ avion.capacidad }}</td>
-                <td>{{ avion.filas }}</td>
-                <td>{{ avion.columnas }}</td>
-                <td>
-                    <a href="{% url 'gestion:editar_avion' avion.pk %}">Editar</a> |
-                    <a href="{% url 'gestion:eliminar_avion' avion.pk %}">Eliminar</a>
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="5">No hay aviones registrados.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<h2>Vuelos Disponibles</h2>
+
+<style>
+    .vuelos-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: flex-start;
+        margin: 20px 0;
+    }
+
+    .vuelo-card {
+        width: 280px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        transition: transform 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .vuelo-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .vuelo-image img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+    }
+
+    .vuelo-info {
+        padding: 15px;
+        background-color: #f9f9f9;
+        flex-grow: 1;
+    }
+
+    .vuelo-info h3 {
+        margin-top: 0;
+        font-size: 1.2rem;
+    }
+
+    .vuelo-info p {
+        margin: 5px 0;
+        font-size: 0.95rem;
+    }
+
+    .btn-detalles {
+        display: inline-block;
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .btn-detalles:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="vuelos-container">
+    {% for vuelo in vuelos %}
+        <div class="vuelo-card">
+            <div class="vuelo-image">
+                <img src="{{ vuelo.avion.imagen.url }}" alt="Avión {{ vuelo.avion.modelo }}">
+            </div>
+            <div class="vuelo-info">
+                <h3>{{ vuelo.origen }} → {{ vuelo.destino }}</h3>
+                <p><strong>Fecha:</strong> {{ vuelo.fecha }}</p>
+                <p><strong>Hora:</strong> {{ vuelo.hora }}</p>
+                <p><strong>Avión:</strong> {{ vuelo.avion.modelo }}</p>
+                <p><strong>Precio:</strong> ${{ vuelo.precio }}</p>
+                <a href="{% url 'gestion:detalle_vuelo' vuelo.pk %}" class="btn-detalles">Ver detalles</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No hay vuelos disponibles.</p>
+    {% endfor %}
+</div>
 {% endblock %}

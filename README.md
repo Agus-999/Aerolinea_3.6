@@ -1,77 +1,73 @@
 🛫 Proyecto: Aerolínea Voladora
-✨ Etapa 4: Empleados - Vuelos
-En esta etapa desarrollamos la funcionalidad que permite a los empleados gestionar y visualizar los vuelos programados por la aerolínea.
+✨ Etapa 5: Clientes - Visualización de Vuelos
+En esta etapa desarrollamos la funcionalidad destinada a los clientes, permitiéndoles visualizar de forma clara, atractiva y accesible los vuelos disponibles junto con los datos del avión.
 
-1. 🧱 Modelado del modelo Vuelo
-Creamos el modelo Vuelo con los siguientes campos:
+1. 🧱 Combinación de datos de vuelo y avión
+Creamos una vista que combina la información del vuelo con la del avión para facilitar la comprensión al cliente:
 
-✈️ Avión (avion)
+✈️ Modelo del avión
 
-🇦🇷 Origen (origen)
+🪑 Capacidad
 
-🇲🇽 Destino (destino)
+⚙️ Fabricante
 
-📅 Fecha de salida (fecha_salida)
+🛫 Origen del vuelo
 
-📅 Fecha de llegada (fecha_llegada)
+🛬 Destino
 
-🕓 Duración (duracion)
+📅 Fecha y hora de salida/llegada
 
-🚦 Estado (estado)
+🕓 Duración calculada
 
-💵 Precio (precio)
+💵 Precio
 
-2. 🧠 Lógica en la vista
-Creamos la vista lista_vuelos en views.py para:
+🚦 Estado del vuelo
 
-Consultar todos los vuelos.
+2. 🎨 Diseño de tarjeta visual (template lista_clientes.html)
+En lugar de una tabla, diseñamos tarjetas individuales estilo "cajas" para mostrar los vuelos:
 
-Calcular automáticamente la duración (duracion = llegada - salida).
+En la parte superior: imagen representativa del avión.
 
-Mostrar los datos en español (fechas y duración traducidas).
+Debajo: información del vuelo y del avión en una estructura tipo tarjeta.
 
-3. 🧾 Plantilla lista.html
-Creamos una plantilla tipo tabla que muestra los datos con el siguiente formato:
+Estilo responsive y moderno con bordes, colores y espaciado.
 
-Avión	Origen	Destino	Salida	Llegada	Duración	Estado	Precio
-Boeing 737	Argentina	México	1 de julio, 12:51	2 de julio, 12:52	1 día, 1 min	Programado	$150000.00
+3. 📄 Página de detalle (detalle.html)
+Creamos una página donde el cliente puede hacer clic en un vuelo y ver sus detalles ampliados:
 
-Se usó la función localize de Django y se habilitó el idioma español en settings.py.
+Se reutiliza el diseño visual atractivo.
 
-4. 🌍 Traducción y localización
-En el archivo settings.py, se ajustó la configuración regional:
+Se muestran todos los datos del avión y del vuelo.
+
+Se permite volver fácilmente a la lista general de vuelos.
+
+4. 🌍 Localización en español
+Continuamos usando localización en español para mostrar fechas y horas de forma natural:
+
+django
+Copiar código
+{{ vuelo.fecha_salida|date:"j \\d\\e F \\a \\l\\a\\s H:i" }}
+Además, en settings.py se mantiene:
 
 python
-Copiar
-Editar
+Copiar código
 LANGUAGE_CODE = 'es'
 USE_L10N = True
 USE_I18N = True
 USE_TZ = True
-Además, en la plantilla se usó el filtro:
+📁 Estructura del proyecto (resumen relevante)
 
-django
-Copiar
-Editar
-{{ vuelo.fecha_salida|date:"j \\d\\e F \\a \\l\\a\\s H:i" }}
-Para lograr una salida localizada, legible y completamente en español.
-
-📁 Estructura actual del proyecto
-Copiar
-Editar
+Copiar código
 aerolinea_voladora/
 ├── aerolinea_voladora/
-│   ├── settings.py
-│   ├── urls.py
-│   └── ...
+│   └── settings.py
 ├── empleados/
-│   ├── models.py
+│   └── models.py
+├── clientes/
 │   ├── views.py
 │   └── templates/
-│       └── empleados/
-│           └── lista.html
-├── aerolineas_voladoras.sqlite3
-├── manage.py
-└── ...
-✍️ Autor
+│       └── clientes/
+│           ├── lista_clientes.html
+│           └── detalle.html
+✍️ Autor:
 Agustín Alejandro Fasano

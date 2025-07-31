@@ -1,0 +1,90 @@
+/* Contenedor de aviones */
+.aviones-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    margin: 20px 0;
+}
+
+/* Estilo de cada tarjeta de avión (caja) */
+.avion-card {
+    width: 250px;
+    height: 350px; /* Altura fija para que todas las tarjetas tengan el mismo tamaño */
+    border: 2px solid #ddd;  /* Borde */
+    border-radius: 10px;      /* Borde redondeado */
+    overflow: hidden;         /* Para asegurarnos que no se vea fuera del borde */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    background-color: #fff;
+    text-align: center;
+    transition: transform 0.3s;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Imagen del avión */
+.avion-image {
+    width: 100%;
+    height: 180px; /* Tamaño fijo para la imagen */
+    overflow: hidden;
+}
+
+.avion-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Asegura que la imagen ocupe todo el espacio sin distorsionarse */
+}
+
+/* Información del avión */
+.avion-info {
+    padding: 10px;
+    background-color: #f9f9f9;
+    flex-grow: 1; /* Para que la información ocupe el espacio restante de la tarjeta */
+}
+
+.avion-info h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.avion-info p {
+    margin: 5px 0;
+}
+
+.avion-info a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    margin: 5px;
+    display: block;
+}
+
+.avion-info a:hover {
+    text-decoration: underline;
+}
+
+/* Efecto al pasar el mouse */
+.avion-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Hacer el selector más específico */
+div.avion-card {
+    width: 250px;
+    height: 350px; 
+    border: 2px solid #ddd;  /* Borde */
+    border-radius: 10px;      /* Borde redondeado */
+    overflow: hidden;         /* Para asegurarnos que no se vea fuera del borde */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    background-color: #fff;
+    text-align: center;
+    transition: transform 0.3s;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}

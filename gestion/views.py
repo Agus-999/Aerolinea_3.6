@@ -6,33 +6,40 @@ from .forms import AvionForm, VueloForm
 
 ### ---- AVIONES ---- ###
 
-# Lista
 def lista_aviones(request):
     aviones = Avion.objects.all()
     return render(request, 'empleados/aviones/lista.html', {'aviones': aviones})
 
-# Crear / Editar
-def avion_formulario(request, pk=None):
-    avion = get_object_or_404(Avion, pk=pk) if pk else None
+def detalle_avion(request, pk):
+    avion = get_object_or_404(Avion, pk=pk)
+    return render(request, 'empleados/aviones/detalle_avion.html', {'avion': avion})
 
+def nuevo_avion(request):
     if request.method == 'POST':
-        form = AvionForm(request.POST, instance=avion)
+        form = AvionForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion:lista_aviones')
+    else:
+        form = AvionForm()
+    return render(request, 'empleados/aviones/formulario.html', {'form': form, 'avion': None})
+
+def editar_avion(request, pk):
+    avion = get_object_or_404(Avion, pk=pk)
+    if request.method == 'POST':
+        form = AvionForm(request.POST, request.FILES, instance=avion)
         if form.is_valid():
             form.save()
             return redirect('gestion:lista_aviones')
     else:
         form = AvionForm(instance=avion)
-
     return render(request, 'empleados/aviones/formulario.html', {'form': form, 'avion': avion})
 
-# Eliminar
 def eliminar_avion(request, pk):
     avion = get_object_or_404(Avion, pk=pk)
-
     if request.method == 'POST':
         avion.delete()
         return redirect('gestion:lista_aviones')
-
     return render(request, 'empleados/aviones/eliminar.html', {'avion': avion})
 
 
@@ -93,3 +100,20 @@ def eliminar_vuelo(request, pk):
         messages.success(request, "Vuelo eliminado exitosamente.")
         return redirect('gestion:lista_vuelos')
     return render(request, 'empleados/vuelos/eliminar.html', {'vuelo': vuelo})
+
+
+
+# CLIENTES
+
+from django.shortcuts import render, get_object_or_404
+from .models import Vuelo
+
+# Clientes: lista de vuelos disponibles
+def vuelos_clientes_lista(request):
+    vuelos = Vuelo.objects.all()
+    return render(request, 'clientes/vuelos/lista.html', {'vuelos': vuelos})
+
+# Clientes: detalle de vuelo
+def vuelos_clientes_detalle(request, pk):
+    vuelo = get_object_or_404(Vuelo, pk=pk)
+    return render(request, 'clientes/vuelos/detalle.html', {'vuelo': vuelo})
