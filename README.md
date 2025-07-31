@@ -1,107 +1,77 @@
-✈️ Etapa 4 - Subetapa 1: Gestión de Aviones - Portal para Empleados 🧑‍✈️
-En esta subetapa se implementó una interfaz para que empleados autenticados puedan gestionar aviones desde el sistema. Esto incluye registrar, modificar, listar y eliminar aviones desde el panel web.
+🛫 Proyecto: Aerolínea Voladora
+✨ Etapa 4: Empleados - Vuelos
+En esta etapa desarrollamos la funcionalidad que permite a los empleados gestionar y visualizar los vuelos programados por la aerolínea.
 
-🔐 Solo los usuarios con rol empleado pueden acceder a esta funcionalidad.
+1. 🧱 Modelado del modelo Vuelo
+Creamos el modelo Vuelo con los siguientes campos:
 
-🛫 Escala del Proyecto
-Etapa 4: Funcionalidades por Rol
-├── 🟢 Subetapa 1: Gestión de Aviones (actual)
-└── 🔵 Subetapa 2: [pendiente]
+✈️ Avión (avion)
 
-🎯 Objetivo de esta Subetapa
-Permitir a los empleados agregar, editar y eliminar aviones.
+🇦🇷 Origen (origen)
 
-Crear una sección con listado en tabla.
+🇲🇽 Destino (destino)
 
-Asegurar que esta función solo esté disponible para usuarios con rol empleado.
+📅 Fecha de salida (fecha_salida)
 
-Agregar campos clave como modelo, capacidad, filas y columnas.
+📅 Fecha de llegada (fecha_llegada)
 
-🛠️ Cambios Realizados
-🛩️ 1. Modelo Avion
-📄 gestion/models.py
+🕓 Duración (duracion)
 
-python
-Copiar código
-class Avion(models.Model):
-    modelo = models.CharField(max_length=100)
-    capacidad = models.PositiveIntegerField()
-    filas = models.PositiveIntegerField(default=1)
-    columnas = models.PositiveIntegerField(default=1)
+🚦 Estado (estado)
 
-    def __str__(self):
-        return self.modelo
-🧾 2. Formulario de Aviones
-📄 gestion/forms.py
+💵 Precio (precio)
 
-python
-Copiar código
-class AvionForm(forms.ModelForm):
-    class Meta:
-        model = Avion
-        fields = ['modelo', 'capacidad', 'filas', 'columnas']
-🧠 3. Lógica de Vistas
-📄 gestion/views.py
-Incluye lógica para listar, crear, editar y eliminar aviones.
+2. 🧠 Lógica en la vista
+Creamos la vista lista_vuelos en views.py para:
 
-lista_aviones: muestra una tabla con los datos.
+Consultar todos los vuelos.
 
-avion_formulario: se reutiliza para crear y editar.
+Calcular automáticamente la duración (duracion = llegada - salida).
 
-eliminar_avion: confirma y elimina un avión.
+Mostrar los datos en español (fechas y duración traducidas).
 
-🌐 4. URLs para CRUD
-📄 gestion/urls.py
+3. 🧾 Plantilla lista.html
+Creamos una plantilla tipo tabla que muestra los datos con el siguiente formato:
+
+Avión	Origen	Destino	Salida	Llegada	Duración	Estado	Precio
+Boeing 737	Argentina	México	1 de julio, 12:51	2 de julio, 12:52	1 día, 1 min	Programado	$150000.00
+
+Se usó la función localize de Django y se habilitó el idioma español en settings.py.
+
+4. 🌍 Traducción y localización
+En el archivo settings.py, se ajustó la configuración regional:
 
 python
-Copiar código
-urlpatterns = [
-    path('aviones/', views.lista_aviones, name='lista_aviones'),
-    path('aviones/nuevo/', views.avion_formulario, name='nuevo_avion'),
-    path('aviones/<int:pk>/editar/', views.avion_formulario, name='editar_avion'),
-    path('aviones/<int:pk>/eliminar/', views.eliminar_avion, name='eliminar_avion'),
-]
-🧑‍✈️ 5. Interfaz Web para Empleados
-📂 empleados/aviones/
-
-lista.html: muestra todos los aviones en una tabla.
-
-formulario.html: contiene el formulario para agregar o editar.
-
-eliminar.html: página de confirmación para eliminar.
-
-La navegación hacia esta sección solo se muestra si el usuario tiene el rol empleado.
-
-💼 6. Administración en Django
-📄 gestion/admin.py
-
-python
-Copiar código
-@admin.register(Avion)
-class AvionAdmin(admin.ModelAdmin):
-    list_display = ('modelo', 'capacidad', 'filas', 'columnas')
-    search_fields = ('modelo',)
-🧭 7. Integración en el Template Base
-📄 templates/base.html
+Copiar
+Editar
+LANGUAGE_CODE = 'es'
+USE_L10N = True
+USE_I18N = True
+USE_TZ = True
+Además, en la plantilla se usó el filtro:
 
 django
-Copiar código
-{% if user.is_authenticated and user.rol == "empleado" %}
-    <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a> |
-{% endif %}
-Esto asegura que solo los empleados vean el acceso a la gestión de aviones.
+Copiar
+Editar
+{{ vuelo.fecha_salida|date:"j \\d\\e F \\a \\l\\a\\s H:i" }}
+Para lograr una salida localizada, legible y completamente en español.
 
-🗂️ Archivos Clave Modificados
-Archivo	Descripción
-models.py	Define el modelo Avion
-views.py	Lógica CRUD para aviones
-forms.py	Formulario para aviones
-urls.py	Rutas para la gestión
-admin.py	Registro en el panel Django
-base.html	Control de acceso por rol
-templates/empleados/aviones/	Interfaz de usuario
-
-👨‍💼 Autor
-Agustín Fasano
-🎓 Estudiante ITEC | 💻 Desarrollador en formación
-📁 Proyecto académico de gestión aeronáutica con Django
+📁 Estructura actual del proyecto
+Copiar
+Editar
+aerolinea_voladora/
+├── aerolinea_voladora/
+│   ├── settings.py
+│   ├── urls.py
+│   └── ...
+├── empleados/
+│   ├── models.py
+│   ├── views.py
+│   └── templates/
+│       └── empleados/
+│           └── lista.html
+├── aerolineas_voladoras.sqlite3
+├── manage.py
+└── ...
+✍️ Autor
+Agustín Alejandro Fasano

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Campo oculto manual (NO forma parte del form) -->
+    <input type="hidden" id="id_duracion" name="duracion" value="">
+
+    <div id="duracion-container" style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; display: none;">
+        <strong>Duración: </strong><span id="duracion"></span>
+    </div>
+
+    <button type="submit">Guardar</button>
+    <a href="{% url 'gestion:lista_vuelos' %}">Cancelar</a>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function calcularDuracion() {
+            const salida = document.getElementById("id_fecha_salida").value;
+            const llegada = document.getElementById("id_fecha_llegada").value;
+
+            if (salida && llegada) {
+                const inicio = new Date(salida);
+                const fin = new Date(llegada);
+
+                const ms = fin - inicio;
+                if (ms < 0) {
+                    document.getElementById("duracion-container").style.display = 'none';
+                    return;
+                }
+
+                const dias = Math.floor(ms / (1000 * 60 * 60 * 24));
+                const horas = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutos = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                const segundos = Math.floor((ms % (1000 * 60)) / 1000);
+
+                const texto = `${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos`;
+
+                document.getElementById("duracion").innerText = texto;
+                document.getElementById("duracion-container").style.display = 'block';
+                document.getElementById("id_duracion").value = ms / 1000; // en segundos
+            } else {
+                document.getElementById("duracion-container").style.display = 'none';
+            }
+        }
+
+        document.getElementById("id_fecha_salida").addEventListener("input", calcularDuracion);
+        document.getElementById("id_fecha_llegada").addEventListener("input", calcularDuracion);
+    });
+</script>
+
+{% endblock %}

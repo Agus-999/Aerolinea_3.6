@@ -42,3 +42,5 @@ def vista_registro(request):
 def vista_logout(request):
     logout(request)
     return redirect('login')
+
+

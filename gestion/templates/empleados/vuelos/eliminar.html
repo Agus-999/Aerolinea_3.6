@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>¿Eliminar Vuelo?</h2>
+  <p>¿Estás seguro que deseas eliminar el vuelo de <strong>{{ vuelo.origen }}</strong> a <strong>{{ vuelo.destino }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'gestion:lista_vuelos' %}">Cancelar</a>
+  </form>
+{% endblock %}

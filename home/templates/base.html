@@ -15,6 +15,7 @@
 
             {% if user.rol == "empleado" %}
                 <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a>
+                <a href="{% url 'gestion:lista_vuelos' %}">Gestión Vuelos</a> |
             {% endif %}
             
             <a href="{% url 'logout' %}">Cerrar sesión</a>

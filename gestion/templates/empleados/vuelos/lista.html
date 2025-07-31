@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Lista de Vuelos</h2>
+  <a href="{% url 'gestion:crear_vuelo' %}">➕ Nuevo Vuelo</a>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Avión</th>
+        <th>Origen</th>
+        <th>Destino</th>
+        <th>Salida</th>
+        <th>Llegada</th>
+        <th>Duración</th>
+        <th>Estado</th>
+        <th>Precio Base</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vuelo in vuelos %}
+      <tr>
+        <td>{{ vuelo.avion }}</td>
+        <td>{{ vuelo.origen }}</td>
+        <td>{{ vuelo.destino }}</td>
+        <td>{{ vuelo.fecha_salida }}</td>
+        <td>{{ vuelo.fecha_llegada }}</td>
+        <td>{{ vuelo.duracion }}</td>
+        <td>{{ vuelo.get_estado_display }}</td>
+        <td>${{ vuelo.precio_base }}</td>
+        <td>
+          <a href="{% url 'gestion:editar_vuelo' vuelo.id %}">✏️</a>
+          <a href="{% url 'gestion:eliminar_vuelo' vuelo.id %}">🗑️</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
