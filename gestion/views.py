@@ -241,6 +241,13 @@ def crear_reserva(request):
                 codigo_reserva=str(get_random_string(8)).upper()
             )
 
+            # ✅ Crear boleto automáticamente
+            Boleto.objects.create(
+                reserva=reserva,
+                codigo_barra=f"BOL-{get_random_string(12).upper()}",
+                estado='emitido'
+            )
+
             return redirect('gestion:ver_asientos', reserva_id=reserva.id)
         else:
             messages.error(request, "Formulario inválido. Por favor revisa los datos.")
@@ -248,7 +255,6 @@ def crear_reserva(request):
         form = ReservaForm()
 
     return render(request, 'clientes/reservas/formulario.html', {'form': form, 'reserva': None})
-
 
 @login_required
 def ver_asientos(request, reserva_id):
@@ -443,3 +449,49 @@ def eliminar_reserva(request, reserva_id):
         return redirect('gestion:mis_reservas')
 
     return render(request, 'clientes/reservas/eliminar.html', {'reserva': reserva})
+
+
+from .models import Reserva, Vuelo, Pasajero, Asiento, Boleto  # ← agregamos Boleto
+
+@login_required
+def ver_boleto(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+
+    # Asegurar que exista un boleto (por si la reserva es vieja)
+    boleto = getattr(reserva, 'boleto', None)
+    if boleto is None:
+        boleto = Boleto.objects.create(
+            reserva=reserva,
+            codigo_barra=f"BOL-{get_random_string(12).upper()}",
+            estado='emitido'
+        )
+
+    asientos = list(reserva.asientos.all())
+    return render(request, 'clientes/boletos/boleto.html', {
+        'reserva': reserva,
+        'boleto': boleto,
+        'asientos': asientos,
+    })
+@login_required
+def descargar_boleto(request, reserva_id):
+    """
+    Vista que muestra/permite descargar el boleto en formato HTML imprimible (guarda como PDF desde el navegador).
+    Crea el Boleto si por alguna razón no existe (reservas antiguas).
+    """
+    reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+
+    # Asegurar existencia del boleto (si por alguna razón no fue creado antes)
+    boleto = getattr(reserva, 'boleto', None)
+    if boleto is None:
+        boleto = Boleto.objects.create(
+            reserva=reserva,
+            codigo_barra=f"BOL-{get_random_string(12).upper()}",
+            estado='emitido'
+        )
+
+    asientos = list(reserva.asientos.all())
+    return render(request, 'clientes/boletos/boleto.html', {
+        'reserva': reserva,
+        'boleto': boleto,
+        'asientos': asientos,
+    })

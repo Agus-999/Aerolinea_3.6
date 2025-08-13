@@ -80,6 +80,12 @@
   .btn-delete:hover {
     background-color: #bd2130;
   }
+  .btn-boleto {
+    background-color: #6f42c1;
+  }
+  .btn-boleto:hover {
+    background-color: #563d7c;
+  }
   form.delete-form {
     margin: 0;
     flex: 1;
@@ -114,9 +120,19 @@
   <p><strong>Precio total:</strong> ${{ reserva.precio|default:"0.00" }}</p>
   <p><strong>Estado:</strong> {{ reserva.get_estado_display }}</p>
 
+  {% if reserva.boleto %}
+    <h4>Boleto</h4>
+    <p><strong>Código de Barra:</strong> {{ reserva.boleto.codigo_barra }}</p>
+    <p><strong>Fecha de Emisión:</strong> {{ reserva.boleto.fecha_emision|date:"d/m/Y H:i" }}</p>
+  {% endif %}
+
   <div class="btn-group">
     <a href="{% url 'gestion:editar_reserva' reserva.id %}" class="btn btn-edit">✏️ Editar Reserva</a>
     <a href="{% url 'gestion:ver_asientos' reserva.id %}" class="btn btn-asientos">🪑 Seleccionar Asientos</a>
+    
+    {% if reserva.boleto %}
+      <a href="{% url 'gestion:descargar_boleto' reserva.id %}" class="btn btn-boleto">🎟️ Descargar Boleto</a>
+    {% endif %}
     
     <form method="post" action="{% url 'gestion:eliminar_reserva' reserva.id %}" class="delete-form">
       {% csrf_token %}

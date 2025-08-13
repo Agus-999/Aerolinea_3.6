@@ -1,140 +1,70 @@
-# ✈️ Sistema de Gestión de Reservas de Vuelos
+🎟️ Gestión de Boletos de Vuelos
+Extensión del sistema de reservas de vuelos en Django, ahora con boletos generados automáticamente al crear una reserva y posibilidad de descargarlos en formato HTML imprimible.
 
-Un sistema web desarrollado en **Django** para gestionar reservas de vuelos, con selección dinámica de asientos, edición y cancelación de reservas.  
+🚀 Funcionalidades principales de Boletos
+🛬 Generación automática de boletos al crear una reserva
 
----
+🆔 Cada boleto tiene un código de barra único
 
-## 🚀 Funcionalidades principales
+📅 Registro de fecha de emisión
 
-- 👤 Gestión de reservas por usuario autenticado  
-- 📝 Crear y editar reservas con datos completos del pasajero  
-- 🪑 Selección visual e interactiva de hasta 4 asientos por reserva  
-- 💳 Confirmación y bloqueo de asientos con actualización de estado y precio  
-- 🗑️ Cancelación de reservas liberando los asientos ocupados  
-- 📋 Listado y detalle de reservas con información completa  
-- 🛫 **Creación automática de asientos** al registrar un nuevo avión  
+🔖 Estado del boleto: emitido o cancelado
 
----
+🖨️ Descarga del boleto en formato HTML listo para imprimir desde el detalle de la reserva
 
-## 📁 Estructura de archivos y carpetas
+🔄 Integración completa con la reserva y los asientos asignados
 
+📁 Estructura de archivos y carpetas relacionada
 gestion/
-├── migrations/
 ├── templates/
 │ └── clientes/
-│ └── reservas/
-│ ├── detalle.html
-│ ├── eliminar.html
-│ ├── formulario.html
-│ ├── lista.html
-│ └── reserva.html
-├── static/
-│ └── (archivos estáticos: CSS, JS, imágenes)
-├── forms.py
-├── models.py
-├── urls.py
-├── views.py
-└── tests.py
+│ └── boletos/
+│ └── boleto.html ← plantilla para visualización/descarga del boleto
+├── views.py ← vista descargar_boleto
+├── models.py ← modelo Boleto
+├── urls.py ← ruta descargar_boleto
 
-markdown
-Copiar
-Editar
+🔗 URLs principales relacionadas con boletos
+Ruta	Vista	Descripción
+/reservas/<reserva_id>/boleto/descargar/	descargar_boleto	Mostrar y descargar el boleto asociado a la reserva
 
----
+🗃️ Modelo principal: Boleto (models.py)
+reserva → Relación OneToOne con la reserva correspondiente
 
-## 🔗 URLs principales
+codigo_barra → Código de identificación único del boleto
 
-| Ruta                             | Vista                 | Descripción                              |
-|---------------------------------|-----------------------|------------------------------------------|
-| `/mis-reservas/`                 | `mis_reservas`        | Lista de reservas del usuario            |
-| `/reservas/crear/`               | `crear_reserva`       | Crear una nueva reserva                   |
-| `/reservas/<reserva_id>/`        | `detalle_reserva`     | Ver detalle y editar datos de la reserva |
-| `/reservas/<reserva_id>/editar/` | `editar_reserva`      | Editar datos del pasajero y vuelo        |
-| `/reservas/<reserva_id>/eliminar/` | `eliminar_reserva`  | Cancelar reserva y liberar asientos      |
-| `/reservas/<reserva_id>/asientos/` | `ver_asientos`      | Selección y visualización de asientos    |
-| `/confirmar-compra/`             | `confirmar_compra`    | Confirmar compra y reservar asientos     |
-| `/aviones/nuevo/`                | `nuevo_avion`         | Crear un nuevo avión con asientos automáticos |
+fecha_emision → Fecha de creación automática
 
----
+estado → 'emitido' o 'cancelado'
 
-## 🗃️ Modelos principales (`models.py`)
+Métodos básicos: __str__() para mostrar de forma legible
 
-### Pasajero
-- Datos personales y contacto
-- Relación opcional con usuario autenticado
+⚙️ Lógica y flujo de boletos
+Cuando se crea una reserva, automáticamente se genera un boleto vinculado
 
-### Asiento
-- Vinculado a un avión
-- Número, fila, columna y tipo (`económico`, `premium`, `ejecutivo`, `primera`)
-- Estado (`disponible` u `ocupado`)
-- Precio asociado
+Si por alguna razón no existe el boleto, se crea al acceder a la vista de descarga (descargar_boleto)
 
-### Reserva
-- Relación con vuelo, pasajero y usuario
-- Asientos reservados (ManyToMany)
-- Estado (`pendiente`, `confirmada`, `cancelada`)
-- Precio total y código único de reserva
-- Métodos para liberar asientos y borrar reserva con seguridad
+La descarga es mediante renderizado HTML, listo para imprimir o guardar como PDF desde el navegador
 
----
+Mantiene integridad con los asientos reservados y el usuario autenticado
 
-## 🆕 Cambios recientes
+🖥️ Frontend y experiencia de usuario
+Se integra en el detalle de la reserva (detalle.html) con botón: 🎟️ Descargar Boleto
 
-### ✈️ Creación automática de asientos al registrar un avión
-Ahora, al crear un nuevo avión desde la vista `nuevo_avion`, el sistema genera automáticamente todos los asientos según las filas y columnas configuradas, asignando tipo de asiento en función de la fila:
+Interfaz limpia y responsiva
 
-- Filas 1-2 → Primera clase  
-- Filas 3-6 → Ejecutivo  
-- Filas 7-10 → Premium Economy  
-- Filas restantes → Económico  
+Muestra información completa: código de barra, fecha de emisión, datos del pasajero y asientos
 
-Además:
-- El estado inicial de todos los asientos es **"disponible"**.
-- Se valida que la cantidad de filas y columnas pueda cubrir la capacidad total del avión.
+Fácil de imprimir o guardar en PDF desde el navegador
 
----
+📦 Cómo probar la funcionalidad
+Crear una reserva desde /reservas/crear/
 
-## ⚙️ Lógica y flujo de trabajo
+Ir al detalle de la reserva (/reservas/<reserva_id>/)
 
-- Autenticación obligatoria para todas las acciones de reserva  
-- Validaciones de formulario para datos completos y correctos  
-- En la selección de asientos, se bloquean los ya ocupados y máximo 4 por usuario  
-- Confirmación de compra con transacciones para mantener integridad de datos  
-- Liberación automática de asientos en edición o eliminación de reserva  
-- **Generación automática de asientos** en la creación de un avión  
+Hacer clic en 🎟️ Descargar Boleto
 
----
-
-## 🖥️ Frontend y experiencia de usuario
-
-- Interfaz responsive y amigable con Bootstrap  
-- Grid visual para selección de asientos, con colores y precios destacados  
-- Modal de confirmación con resumen claro de la compra  
-- Alertas y mensajes para feedback inmediato al usuario  
-- Navegación sencilla entre listado, detalle, edición y selección  
-
----
-
-## 📦 Cómo poner en marcha el proyecto
-
-1. Clonar el repositorio y configurar entorno virtual  
-2. Instalar dependencias con `pip install -r requirements.txt`  
-3. Ejecutar migraciones:  
-   ```bash
-   python manage.py migrate
-Crear superusuario si se desea:
-
-bash
-Copiar
-Editar
-python manage.py createsuperuser
-Levantar servidor local:
-
-bash
-Copiar
-Editar
-python manage.py runserver
-Acceder en navegador a http://localhost:8000/mis-reservas/
+Verás el boleto generado automáticamente listo para imprimir
 
 👨‍💻 Autor
 Agustín Fasano

@@ -35,5 +35,8 @@ path('reservas/<int:reserva_id>/asientos/', views.ver_asientos, name='ver_asient
 
 path('confirmar-compra/', views.confirmar_compra, name='confirmar_compra'),
 
+# ✅ Nueva: ver/descargar boleto (HTML imprimible a PDF)
+    path('reservas/<int:reserva_id>/boleto/descargar/', views.descargar_boleto, name='descargar_boleto'),
+
 ]
 
