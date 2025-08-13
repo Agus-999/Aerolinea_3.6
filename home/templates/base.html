@@ -16,10 +16,14 @@
             {% if user.rol == "empleado" %}
                 <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a>
                 <a href="{% url 'gestion:lista_vuelos' %}">Gestión Vuelos</a> |
+                <a href="{% url 'gestion:lista_pasajeros' %}">Gestión Pasajeros</a>
             {% endif %}
 
             {% if user.rol == "cliente" %}
                 <a href="{% url 'gestion:vuelos_clientes_lista' %}">Vuelos</a>
+                <a href="{% url 'gestion:mis_reservas' %}">Mis Reservas</a>
+
+
             {% endif %}
             
             <a href="{% url 'logout' %}">Cerrar sesión</a>

@@ -1,0 +1,12 @@
+<!-- clientes/reservas/eliminar.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Cancelar Reserva</h2>
+  <p>¿Estás seguro de que deseas cancelar esta reserva?</p>
+  <p>Reserva: {{ reserva.codigo_reserva }} - Vuelo: {{ reserva.vuelo.origen }} → {{ reserva.vuelo.destino }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Cancelar Reserva</button>
+  </form>
+{% endblock %}

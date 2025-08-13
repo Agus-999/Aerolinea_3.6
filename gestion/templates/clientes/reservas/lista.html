@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .reservas-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .reserva-card {
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    width: 300px;
+    color: #333;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .reserva-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    color: #007bff;
+  }
+  .reserva-card h4 {
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .reserva-card p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+  }
+</style>
+
+<h2>Mis Reservas</h2>
+
+<a href="{% url 'gestion:crear_reserva' %}" class="btn btn-success mb-3">Crear nueva reserva</a>
+
+{% if reservas %}
+  <div class="reservas-lista">
+    {% for reserva in reservas %}
+      <a href="{% url 'gestion:detalle_reserva' reserva.id %}" class="reserva-card">
+        <h4>Vuelo: {{ reserva.vuelo }}</h4>
+        <p><strong>Fecha del vuelo:</strong> {{ reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}</p>
+        <p><strong>Fecha reserva:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</p>
+        <p><strong>Asientos:</strong>
+          {% if reserva.asientos.all %}
+            {% for asiento in reserva.asientos.all %}
+              {{ asiento.numero }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            Sin asignar
+          {% endif %}
+        </p>
+        <p><strong>Precio total:</strong> ${{ reserva.precio|default:"0.00" }}</p>
+        <p><strong>Estado:</strong> {{ reserva.get_estado_display }}</p>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>No tienes reservas aún.</p>
+{% endif %}
+{% endblock %}

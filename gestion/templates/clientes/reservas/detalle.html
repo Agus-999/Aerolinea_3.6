@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .detalle-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 30px 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #222;
+  }
+  .detalle-container h2 {
+    margin-bottom: 25px;
+    font-weight: 800;
+    color: #007bff;
+  }
+  .detalle-container h4 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+    color: #0056b3;
+  }
+  .detalle-container p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 6px 0;
+  }
+  .detalle-container ul {
+    list-style: disc inside;
+    padding-left: 0;
+  }
+  .detalle-container li {
+    margin-bottom: 6px;
+    font-size: 1rem;
+  }
+  .btn-group {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+    transition: background-color 0.3s ease;
+  }
+  .btn-back {
+    background-color: #007bff;
+  }
+  .btn-back:hover {
+    background-color: #0056b3;
+  }
+  .btn-edit {
+    background-color: #28a745;
+  }
+  .btn-edit:hover {
+    background-color: #1e7e34;
+  }
+  .btn-asientos {
+    background-color: #ffc107;
+    color: #212529;
+  }
+  .btn-asientos:hover {
+    background-color: #e0a800;
+    color: #212529;
+  }
+  .btn-delete {
+    background-color: #dc3545;
+  }
+  .btn-delete:hover {
+    background-color: #bd2130;
+  }
+  form.delete-form {
+    margin: 0;
+    flex: 1;
+  }
+</style>
+
+<div class="detalle-container">
+  <h2>Detalle de la Reserva</h2>
+
+  <p><strong>Vuelo:</strong> {{ reserva.vuelo }}</p>
+  <p><strong>Fecha de salida:</strong> {{ reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}</p>
+  <p><strong>Fecha de llegada:</strong> {{ reserva.vuelo.fecha_llegada|date:"d/m/Y H:i" }}</p>
+  <p><strong>Fecha de reserva:</strong> {{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</p>
+
+  <h4>Pasajero</h4>
+  <p><strong>Nombre:</strong> {{ reserva.pasajero.nombre }}</p>
+  <p><strong>Documento:</strong> {{ reserva.pasajero.documento }}</p>
+  <p><strong>Email:</strong> {{ reserva.pasajero.email }}</p>
+  <p><strong>Teléfono:</strong> {{ reserva.pasajero.telefono }}</p>
+  <p><strong>Fecha de nacimiento:</strong> {{ reserva.pasajero.fecha_nacimiento|date:"d/m/Y" }}</p>
+  <p><strong>Tipo de documento:</strong> {{ reserva.pasajero.get_tipo_documento_display }}</p>
+
+  <h4>Asientos reservados</h4>
+  <ul>
+    {% for asiento in reserva.asientos.all %}
+      <li>{{ asiento.numero }} ({{ asiento.tipo|title }})</li>
+    {% empty %}
+      <li>Sin asientos asignados.</li>
+    {% endfor %}
+  </ul>
+
+  <p><strong>Precio total:</strong> ${{ reserva.precio|default:"0.00" }}</p>
+  <p><strong>Estado:</strong> {{ reserva.get_estado_display }}</p>
+
+  <div class="btn-group">
+    <a href="{% url 'gestion:editar_reserva' reserva.id %}" class="btn btn-edit">✏️ Editar Reserva</a>
+    <a href="{% url 'gestion:ver_asientos' reserva.id %}" class="btn btn-asientos">🪑 Seleccionar Asientos</a>
+    
+    <form method="post" action="{% url 'gestion:eliminar_reserva' reserva.id %}" class="delete-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-delete" onclick="return confirm('¿Seguro que quieres eliminar esta reserva? Esto liberará los asientos ocupados.')">
+        🗑️ Eliminar Reserva
+      </button>
+    </form>
+
+    <a href="{% url 'gestion:mis_reservas' %}" class="btn btn-back">← Volver a Mis Reservas</a>
+  </div>
+</div>
+{% endblock %}

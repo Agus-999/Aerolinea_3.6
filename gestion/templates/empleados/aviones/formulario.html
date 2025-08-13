@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <style>
   .form-container {
@@ -34,6 +35,10 @@
     font-size: 1rem;
   }
 
+  input[type="file"] {
+    display: none;
+  }
+
   .upload-box {
     border: 2px dashed #ccc;
     border-radius: 10px;
@@ -47,15 +52,6 @@
 
   .upload-box:hover {
     border-color: #888;
-  }
-
-  .upload-box input {
-    display: none;
-  }
-
-  #upload-text {
-    color: #666;
-    font-style: italic;
   }
 
   .preview {
@@ -94,6 +90,12 @@
     background-color: #e60000;
   }
 
+  .image-name {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
   button[type="submit"] {
     background-color: #007bff;
     color: white;
@@ -129,6 +131,21 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
+    {% if form.errors %}
+      <div style="color: red;">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
     <label for="id_modelo">Modelo:</label>
     {{ form.modelo }}
 
@@ -141,14 +158,22 @@
     <label for="id_columnas">Columnas:</label>
     {{ form.columnas }}
 
+    <label for="id_imagen">Imagen:</label>
     <div class="upload-box" id="drop-area">
-      <p id="upload-text">Arrastra o haz clic para subir una imagen</p>
-      <input type="file" id="id_imagen" name="imagen" accept="image/*">
-      <div class="preview" id="preview-container" style="display:none;">
-        <img id="preview" src="#" alt="Vista previa">
-        <button type="button" class="remove-image" id="remove-button">×</button>
+      <p id="upload-text">Haz clic aquí para subir o reemplazar la imagen</p>
+      <input type="file" name="imagen" id="id_imagen" accept="image/*">
+      <div class="preview" id="preview-container" {% if not avion or not avion.imagen %}style="display:none;"{% endif %}>
+        <div class="remove-image" id="remove-button">×</div>
+        <img id="preview" src="{% if avion and avion.imagen %}{{ avion.imagen.url }}{% endif %}" alt="Vista previa">
+        {% if avion and avion.imagen %}
+          <div class="image-name">
+            {{ avion.imagen.name }}
+          </div>
+        {% endif %}
       </div>
     </div>
+
+    
 
     <button type="submit">Guardar</button>
     <a href="{% url 'gestion:lista_aviones' %}">Cancelar</a>
@@ -157,7 +182,7 @@
 
 <script>
   const dropArea = document.getElementById('drop-area');
-  const fileInput = document.getElementById('id_imagen');
+  const fileInput = document.querySelector('#drop-area input[type="file"]');
   const uploadText = document.getElementById('upload-text');
   const previewContainer = document.getElementById('preview-container');
   const preview = document.getElementById('preview');
@@ -184,12 +209,14 @@
     }
   }
 
-  removeButton.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.value = '';
-    preview.src = '#';
-    previewContainer.style.display = 'none';
-    uploadText.style.display = 'block';
-  });
+  if (removeButton) {
+    removeButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.value = '';
+      preview.src = '#';
+      previewContainer.style.display = 'none';
+      uploadText.style.display = 'block';
+    });
+  }
 </script>
 {% endblock %}

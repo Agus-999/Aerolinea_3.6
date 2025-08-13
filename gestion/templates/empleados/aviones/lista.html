@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Vuelos Disponibles</h2>
+<h2>Aviones Disponibles</h2>
 
 <style>
-    .vuelos-container {
+    .aviones-container {
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
@@ -12,7 +12,7 @@
         margin: 20px 0;
     }
 
-    .vuelo-card {
+    .avion-card {
         width: 280px;
         border: 2px solid #ddd;
         border-radius: 10px;
@@ -24,29 +24,29 @@
         flex-direction: column;
     }
 
-    .vuelo-card:hover {
+    .avion-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .vuelo-image img {
+    .avion-image img {
         width: 100%;
         height: 160px;
         object-fit: cover;
     }
 
-    .vuelo-info {
+    .avion-info {
         padding: 15px;
         background-color: #f9f9f9;
         flex-grow: 1;
     }
 
-    .vuelo-info h3 {
+    .avion-info h3 {
         margin-top: 0;
         font-size: 1.2rem;
     }
 
-    .vuelo-info p {
+    .avion-info p {
         margin: 5px 0;
         font-size: 0.95rem;
     }
@@ -65,25 +65,41 @@
     .btn-detalles:hover {
         background-color: #0056b3;
     }
+
+    .crear-avion {
+        display: inline-block;
+        padding: 8px 12px;
+        background-color: #28a745;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .crear-avion:hover {
+        background-color: #218838;
+    }
 </style>
 
-<div class="vuelos-container">
-    {% for vuelo in vuelos %}
-        <div class="vuelo-card">
-            <div class="vuelo-image">
-                <img src="{{ vuelo.avion.imagen.url }}" alt="Avión {{ vuelo.avion.modelo }}">
+<a href="{% url 'gestion:nuevo_avion' %}" class="crear-avion">Crear nuevo avión</a>
+<div class="aviones-container">
+    {% for avion in aviones %}
+        <div class="avion-card">
+            <div class="avion-image">
+                <img src="{{ avion.imagen.url }}" alt="Avión {{ avion.modelo }}">
             </div>
-            <div class="vuelo-info">
-                <h3>{{ vuelo.origen }} → {{ vuelo.destino }}</h3>
-                <p><strong>Fecha:</strong> {{ vuelo.fecha }}</p>
-                <p><strong>Hora:</strong> {{ vuelo.hora }}</p>
-                <p><strong>Avión:</strong> {{ vuelo.avion.modelo }}</p>
-                <p><strong>Precio:</strong> ${{ vuelo.precio }}</p>
-                <a href="{% url 'gestion:detalle_vuelo' vuelo.pk %}" class="btn-detalles">Ver detalles</a>
+            <div class="avion-info">
+                <h3>{{ avion.modelo }}</h3>
+                <p><strong>Capacidad:</strong> {{ avion.capacidad }} pasajeros</p>
+                <p><strong>Filas:</strong> {{ avion.filas }}</p>
+                <p><strong>Columnas:</strong> {{ avion.columnas }}</p>
+                <p><strong>Asientos:</strong> {{ avion.asientos.count }} asientos</p>
+                <a href="{% url 'gestion:detalle_avion' avion.pk %}" class="btn-detalles">Ver detalles</a>
             </div>
         </div>
     {% empty %}
-        <p>No hay vuelos disponibles.</p>
+        <p>No hay aviones disponibles.</p>
     {% endfor %}
 </div>
 {% endblock %}

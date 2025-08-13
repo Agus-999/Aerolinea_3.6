@@ -1,0 +1,36 @@
+<!-- templates/empleados/pasajeros/lista.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Lista de Pasajeros</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Tipo Documento</th>
+            <th>Documento</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pasajero in pasajeros %}
+        <tr>
+            <td>{{ pasajero.nombre }}</td>
+            <td>{{ pasajero.tipo_documento }}</td>
+            <td>{{ pasajero.documento }}</td>
+            <td>{{ pasajero.email }}</td>
+            <td>{{ pasajero.telefono }}</td>
+            <td>
+                <a href="{% url 'detalle_pasajero' pasajero.id %}">Ver</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No hay pasajeros registrados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  /* Estilos para la selección de asientos y modal */
+
+  .zona-superior {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    flex-wrap: wrap;
+  }
+  .detalle-precio, .carrito-boton {
+    flex: 1;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    min-width: 250px;
+  }
+  .detalle-precio {
+    max-width: 60%;
+  }
+  .carrito-boton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .btn-carrito {
+    padding: 15px 30px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .btn-carrito:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+  }
+  .zona-asientos {
+    padding: 20px;
+    margin-top: 10px;
+  }
+  .asientos-box {
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+  }
+  .asientos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .asiento {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .asiento span {
+    font-size: 12px;
+    position: absolute;
+    bottom: 4px;
+    pointer-events: none;
+  }
+  .seleccionado {
+    background-color: #555 !important;
+    color: white !important;
+  }
+  .ocupado {
+    background-color: #8B0000 !important; /* rojo bordó */
+    cursor: not-allowed;
+    color: white;
+  }
+  /* Colores según el precio */
+  .precio-400 {
+    background-color: gold;
+    color: black;
+  }
+  .precio-300 {
+    background-color: blue;
+    color: white;
+  }
+  .precio-200 {
+    background-color: orange;
+    color: black;
+  }
+  .precio-100 {
+    background-color: green;
+    color: white;
+  }
+  #detalle-lista {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  /* Estilos para el modal */
+  #modal-compra {
+    display: none; /* oculto por defecto */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 320px;
+    box-shadow: 0 0 10px black;
+    text-align: center;
+  }
+  #modal-content h3 {
+    margin-bottom: 15px;
+  }
+  #modal-content button {
+    margin: 10px 15px 0 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+  #btn-confirmar {
+    background-color: #28a745;
+    color: white;
+  }
+  #btn-cancelar {
+    background-color: #dc3545;
+    color: white;
+  }
+</style>
+
+<div class="zona-superior">
+  <div class="detalle-precio">
+    <h3>Detalle de selección</h3>
+    <ul id="detalle-lista"></ul>
+    <p><strong>Total seleccionado:</strong> $<span id="total">0.00</span></p>
+  </div>
+  <div class="carrito-boton">
+    <button id="btn-carrito" class="btn-carrito" disabled>🛒 Carrito</button>
+  </div>
+</div>
+
+<div class="zona-asientos">
+  <div class="asientos-box">
+    <h3>Seleccioná tus asientos</h3>
+    <div class="asientos-grid">
+      {% for asiento in asientos %}
+        <div
+          class="asiento {% if asiento.ocupado %}ocupado{% else %}precio-{{ asiento.precio|floatformat:0 }}{% endif %}"
+          {% if not asiento.ocupado %}
+            data-id="{{ asiento.id }}"
+            data-precio="{{ asiento.precio }}"
+            data-tipo="{{ asiento.tipo }}"
+            title="{{ asiento.tipo|title }} - ${{ asiento.precio }}"
+          {% else %}
+            title="Ocupado"
+          {% endif %}
+        >
+          {{ asiento.numero }}
+          {% if asiento.ocupado %}
+            <span>✖</span>
+          {% else %}
+            <span>${{ asiento.precio }}</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="modal-compra">
+  <div id="modal-content">
+    <h3>Confirmar compra</h3>
+    <p id="texto-compra" style="white-space: pre-line;"></p>
+    <button id="btn-confirmar">Confirmar</button>
+    <button id="btn-cancelar">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  const asientos = document.querySelectorAll('.asiento:not(.ocupado)');
+  const totalSpan = document.getElementById('total');
+  const detalleLista = document.getElementById('detalle-lista');
+  const btnCarrito = document.getElementById('btn-carrito');
+  const modal = document.getElementById('modal-compra');
+  const textoCompra = document.getElementById('texto-compra');
+  const btnConfirmar = document.getElementById('btn-confirmar');
+  const btnCancelar = document.getElementById('btn-cancelar');
+  const maxAsientos = 4;
+  let seleccionados = [];
+
+  function actualizarTotal() {
+    let total = 0;
+    detalleLista.innerHTML = '';
+
+    seleccionados.forEach(({ numero, precio, tipo }) => {
+      total += parseFloat(precio);
+      const li = document.createElement('li');
+      li.textContent = `Asiento ${numero} (${tipo}) - $${precio}`;
+      detalleLista.appendChild(li);
+    });
+
+    totalSpan.textContent = total.toFixed(2);
+    btnCarrito.disabled = seleccionados.length === 0;
+  }
+
+  asientos.forEach(asiento => {
+    asiento.addEventListener('click', () => {
+      const id = asiento.dataset.id;
+      const numero = asiento.textContent.trim();
+      const precio = asiento.dataset.precio;
+      const tipo = asiento.dataset.tipo;
+
+      const index = seleccionados.findIndex(item => item.id === id);
+
+      if (index > -1) {
+        asiento.classList.remove('seleccionado');
+        seleccionados.splice(index, 1);
+      } else {
+        if (seleccionados.length >= maxAsientos) {
+          alert(`Solo puedes seleccionar hasta ${maxAsientos} asientos.`);
+          return;
+        }
+        asiento.classList.add('seleccionado');
+        seleccionados.push({ id, numero, precio, tipo });
+      }
+
+      actualizarTotal();
+    });
+  });
+
+  btnCarrito.addEventListener('click', () => {
+    if (seleccionados.length === 0) return;
+
+    let texto = 'Vas a comprar los asientos:\n';
+    seleccionados.forEach(({ numero, precio }) => {
+      texto += `- ${numero} ($${precio})\n`;
+    });
+    texto += `Total: $${totalSpan.textContent}`;
+    textoCompra.textContent = texto;
+
+    modal.style.display = 'flex';
+  });
+
+  btnCancelar.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  btnConfirmar.addEventListener('click', () => {
+    const ids = seleccionados.map(a => a.id);
+
+    fetch("{% url 'gestion:confirmar_compra' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ 
+        asiento_ids: ids,
+        reserva_id: "{{ reserva.id }}"
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Compra confirmada! Los asientos han sido ocupados.');
+        window.location.href = "{% url 'gestion:mis_reservas' %}";
+      } else {
+        alert('Error: ' + data.error);
+      }
+    })
+    .catch(err => {
+      alert('Error en la comunicación con el servidor.');
+      console.error(err);
+    });
+
+    modal.style.display = 'none';
+  });
+</script>
+{% endblock %}
