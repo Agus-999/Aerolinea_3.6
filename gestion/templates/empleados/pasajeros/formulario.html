@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{% if pasajero %}Editar Pasajero{% else %}Nuevo Pasajero{% endif %}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">{% if pasajero %}Actualizar{% else %}Crear{% endif %}</button>
+  <a href="{% url 'gestion:lista_pasajeros' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

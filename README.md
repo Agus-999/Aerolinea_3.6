@@ -1,70 +1,92 @@
-🎟️ Gestión de Boletos de Vuelos
-Extensión del sistema de reservas de vuelos en Django, ahora con boletos generados automáticamente al crear una reserva y posibilidad de descargarlos en formato HTML imprimible.
+🧳 Gestión de Pasajeros
+Un módulo del sistema de gestión de vuelos desarrollado en Django para que los empleados puedan ver, crear, editar y eliminar pasajeros de manera sencilla y segura.
 
-🚀 Funcionalidades principales de Boletos
-🛬 Generación automática de boletos al crear una reserva
+🚀 Funcionalidades principales
+👤 Lista de pasajeros con información completa
 
-🆔 Cada boleto tiene un código de barra único
+📝 Crear nuevo pasajero desde formulario unificado
 
-📅 Registro de fecha de emisión
+✏️ Editar pasajero usando el mismo formulario de creación
 
-🔖 Estado del boleto: emitido o cancelado
+🗑️ Eliminar pasajero con confirmación previa
 
-🖨️ Descarga del boleto en formato HTML listo para imprimir desde el detalle de la reserva
+🔒 Acceso exclusivo para empleados autenticados
 
-🔄 Integración completa con la reserva y los asientos asignados
+📋 Detalle completo del pasajero con todos sus datos de contacto
 
-📁 Estructura de archivos y carpetas relacionada
+📁 Estructura de archivos y carpetas
 gestion/
+├── migrations/
 ├── templates/
-│ └── clientes/
-│ └── boletos/
-│ └── boleto.html ← plantilla para visualización/descarga del boleto
-├── views.py ← vista descargar_boleto
-├── models.py ← modelo Boleto
-├── urls.py ← ruta descargar_boleto
+│ └── empleados/
+│ └── pasajeros/
+│ ├── detalle.html
+│ ├── eliminar.html
+│ ├── formulario.html
+│ └── lista.html
+├── static/
+│ └── (archivos estáticos: CSS, JS, imágenes)
+├── forms.py
+├── models.py
+├── urls.py
+├── views.py
+└── tests.py
 
-🔗 URLs principales relacionadas con boletos
+🔗 URLs principales
 Ruta	Vista	Descripción
-/reservas/<reserva_id>/boleto/descargar/	descargar_boleto	Mostrar y descargar el boleto asociado a la reserva
+/pasajeros/	lista_pasajeros	Lista de todos los pasajeros
+/pasajeros/nuevo/	nuevo_pasajero	Crear un nuevo pasajero
+/pasajeros/<id>/editar/	editar_pasajero	Editar datos de un pasajero existente
+/pasajeros/<id>/eliminar/	eliminar_pasajero	Confirmar y eliminar un pasajero
+/pasajeros/<id>/	detalle_pasajero	Ver detalle completo del pasajero
 
-🗃️ Modelo principal: Boleto (models.py)
-reserva → Relación OneToOne con la reserva correspondiente
+🗃️ Modelo principal (models.py)
+Pasajero
+usuario (opcional) → relación con el usuario autenticado
 
-codigo_barra → Código de identificación único del boleto
+nombre, documento, email, telefono
 
-fecha_emision → Fecha de creación automática
+fecha_nacimiento, tipo_documento (DNI, Pasaporte, Otro)
 
-estado → 'emitido' o 'cancelado'
+Método __str__() para mostrar el nombre en interfaces y listas
 
-Métodos básicos: __str__() para mostrar de forma legible
+⚙️ Lógica y flujo de trabajo
+Autenticación obligatoria para todas las operaciones
 
-⚙️ Lógica y flujo de boletos
-Cuando se crea una reserva, automáticamente se genera un boleto vinculado
+Validaciones de formulario para datos completos y correctos
 
-Si por alguna razón no existe el boleto, se crea al acceder a la vista de descarga (descargar_boleto)
+Edición y creación usan el mismo formulario (formulario.html)
 
-La descarga es mediante renderizado HTML, listo para imprimir o guardar como PDF desde el navegador
+Eliminación solicita confirmación antes de borrar el registro
 
-Mantiene integridad con los asientos reservados y el usuario autenticado
+Acceso restringido solo a personal autorizado
 
 🖥️ Frontend y experiencia de usuario
-Se integra en el detalle de la reserva (detalle.html) con botón: 🎟️ Descargar Boleto
+Interfaz clara y responsive con Bootstrap
 
-Interfaz limpia y responsiva
+Listado con tabla o grid según necesidad
 
-Muestra información completa: código de barra, fecha de emisión, datos del pasajero y asientos
+Formulario de creación/edición con campos obligatorios destacados
 
-Fácil de imprimir o guardar en PDF desde el navegador
+Alertas y mensajes para feedback inmediato
 
-📦 Cómo probar la funcionalidad
-Crear una reserva desde /reservas/crear/
+Confirmación visual al eliminar un pasajero
 
-Ir al detalle de la reserva (/reservas/<reserva_id>/)
+📦 Cómo poner en marcha este módulo
+Asegurarse de tener el proyecto principal clonado y virtualenv activado
 
-Hacer clic en 🎟️ Descargar Boleto
+Ejecutar migraciones si hay cambios en Pasajero:
 
-Verás el boleto generado automáticamente listo para imprimir
+bash
+Copiar código
+python manage.py makemigrations gestion
+python manage.py migrate
+Levantar servidor local:
+
+bash
+Copiar código
+python manage.py runserver
+Acceder a: http://localhost:8000/pasajeros/ para ver el listado
 
 👨‍💻 Autor
 Agustín Fasano

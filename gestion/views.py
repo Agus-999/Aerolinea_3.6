@@ -146,19 +146,53 @@ def eliminar_vuelo(request, pk):
     return render(request, 'empleados/vuelos/eliminar.html', {'vuelo': vuelo})
 
 
-# empleados/views.py
-
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from .models import Pasajero
+from .forms import PasajeroForm
 
+# Lista de pasajeros
 def lista_pasajeros(request):
     pasajeros = Pasajero.objects.all()
     return render(request, 'empleados/pasajeros/lista.html', {'pasajeros': pasajeros})
 
-def detalle_pasajero(request, pasajero_id):
-    pasajero = get_object_or_404(Pasajero, id=pasajero_id)
-    return render(request, 'empleados/pasajeros/detalle.html', {'pasajero': pasajero})
+# Crear pasajero
+def nuevo_pasajero(request):
+    if request.method == 'POST':
+        form = PasajeroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pasajero creado correctamente.")
+            return redirect('gestion:lista_pasajeros')
+        else:
+            messages.error(request, "Formulario inválido. Por favor revisa los datos.")
+    else:
+        form = PasajeroForm()
+    return render(request, 'empleados/pasajeros/formulario.html', {'form': form, 'pasajero': None})
 
+# Editar pasajero
+def editar_pasajero(request, pasajero_id):
+    pasajero = get_object_or_404(Pasajero, id=pasajero_id)
+    if request.method == 'POST':
+        form = PasajeroForm(request.POST, instance=pasajero)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pasajero actualizado correctamente.")
+            return redirect('gestion:lista_pasajeros')
+        else:
+            messages.error(request, "Formulario inválido. Por favor revisa los datos.")
+    else:
+        form = PasajeroForm(instance=pasajero)
+    return render(request, 'empleados/pasajeros/formulario.html', {'form': form, 'pasajero': pasajero})
+
+# Eliminar pasajero
+def eliminar_pasajero(request, pasajero_id):
+    pasajero = get_object_or_404(Pasajero, id=pasajero_id)
+    if request.method == 'POST':
+        pasajero.delete()
+        messages.success(request, "Pasajero eliminado correctamente.")
+        return redirect('gestion:lista_pasajeros')
+    return render(request, 'empleados/pasajeros/eliminar.html', {'pasajero': pasajero})
 
 
 # CLIENTES

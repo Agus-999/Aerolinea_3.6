@@ -1,5 +1,5 @@
 from django import forms
-from .models import Avion
+from .models import Avion, Pasajero
 
 class AvionForm(forms.ModelForm):
     class Meta:
@@ -75,3 +75,12 @@ class ReservaForm(forms.Form):
         label="Tipo de documento",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+
+
+class PasajeroForm(forms.ModelForm):
+    class Meta:
+        model = Pasajero
+        fields = ['nombre', 'documento', 'email', 'telefono', 'fecha_nacimiento', 'tipo_documento']
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
