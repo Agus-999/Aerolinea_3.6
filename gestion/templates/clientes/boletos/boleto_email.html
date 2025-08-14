@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Boleto de Vuelo</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px; }
+        .boleto { background-color: #fff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+        .footer { margin-top: 20px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="boleto">
+        <h2>Boleto de Vuelo</h2>
+        <p><strong>Código de boleto:</strong> {{ boleto.codigo_barra }}</p>
+
+        <h3>Datos del pasajero</h3>
+        <table>
+            <tr><th>Nombre</th><td>{{ pasajero.nombre }}</td></tr>
+            <tr><th>Documento</th><td>{{ pasajero.documento }}</td></tr>
+            <tr><th>Email</th><td>{{ pasajero.email }}</td></tr>
+            <tr><th>Teléfono</th><td>{{ pasajero.telefono }}</td></tr>
+        </table>
+
+        <h3>Datos de la reserva</h3>
+        <table>
+            <tr><th>Código de reserva</th><td>{{ reserva.codigo_reserva }}</td></tr>
+            <tr><th>Precio total</th><td>${{ reserva.precio|floatformat:2 }}</td></tr>
+        </table>
+
+        <h3>Datos del vuelo</h3>
+        <table>
+            <tr><th>Código de vuelo</th><td>{{ vuelo.codigo_vuelo }}</td></tr>
+            <tr><th>Origen</th><td>{{ vuelo.origen }}</td></tr>
+            <tr><th>Destino</th><td>{{ vuelo.destino }}</td></tr>
+            <tr><th>Fecha</th><td>{{ vuelo.fecha }}</td></tr>
+            <tr><th>Hora</th><td>{{ vuelo.hora }}</td></tr>
+        </table>
+
+        <h3>Asientos asignados</h3>
+        <table>
+            <tr>
+                <th>Número</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+            </tr>
+            {% for asiento in asientos %}
+            <tr>
+                <td>{{ asiento.numero }}</td>
+                <td>{{ asiento.tipo }}</td>
+                <td>${{ asiento.precio|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="footer">
+            <p>Gracias por elegirnos. ¡Buen viaje!</p>
+        </div>
+    </div>
+</body>
+</html>

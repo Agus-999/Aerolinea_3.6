@@ -28,6 +28,9 @@ urlpatterns = [
     path('empleados/reservas/<int:reserva_id>/asientos/', views.ver_asientos_empleado, name='ver_asientos_empleado'),
     path('empleados/reservas/confirmar_asientos/', views.confirmar_compra_empleado, name='confirmar_compra_empleado'),
 
+    path('empleados/boletos/', views.lista_boletos_empleado, name='lista_boletos_empleado'),
+    path('empleados/boletos/verificar/<str:codigo>/', views.verificar_boleto_empleado, name='verificar_boleto_empleado'),
+
    # CLIENTES
     path('clientes/vuelos/', views.vuelos_clientes_lista, name='vuelos_clientes_lista'),
     path('clientes/vuelos/<int:pk>/', views.vuelos_clientes_detalle, name='vuelos_clientes_detalle'),
@@ -43,11 +46,8 @@ urlpatterns = [
     # ✅ Nueva: ver/descargar boleto (HTML imprimible a PDF)
     path('reservas/<int:reserva_id>/boleto/descargar/', views.descargar_boleto, name='descargar_boleto'),
 
-    # Lista de boletos para empleados
-    path('empleados/boletos/', views.lista_boletos_empleado, name='lista_boletos_empleado'),
-
-    # Verificar un boleto específico
-    path('empleados/boletos/verificar/<str:codigo>/', views.verificar_boleto_empleado, name='verificar_boleto_empleado'),
-
+    path('reservas/<int:reserva_id>/boleto/', views.ver_boleto, name='ver_boleto'),
+    path('reservas/<int:reserva_id>/boleto/descargar/', views.descargar_boleto, name='descargar_boleto'),
+    
 ]
 

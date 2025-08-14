@@ -532,75 +532,126 @@ def crear_reserva(request):
 
     return render(request, 'clientes/reservas/formulario.html', {'form': form, 'reserva': None})
 
+
+
+from mail.send import enviar_boleto_por_mail  # Asegurate de que solo reciba "reserva"
+
+from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+
 @login_required
 def ver_asientos(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
     vuelo = reserva.vuelo
     asientos = Asiento.objects.filter(avion=vuelo.avion)
-
     asientos_reserva = reserva.asientos.all()
 
+    # Crear lista de asientos con información ya procesada
+    asientos_info = []
     for asiento in asientos:
-        asiento.precio = PRECIOS_ASIENTO.get(asiento.tipo, Decimal('0.00'))
-        asiento.ocupado = asiento.estado == 'ocupado' and asiento not in asientos_reserva
-        asiento.es_mio = asiento in asientos_reserva
+        tipo_lower = asiento.tipo.lower()  # asegurar coincidencia con PRECIOS_ASIENTO
+        precio_asiento = PRECIOS_ASIENTO.get(tipo_lower, Decimal('0.00'))
+
+        asientos_info.append({
+            'id': asiento.id,
+            'numero': asiento.numero,
+            'tipo': asiento.tipo,
+            'precio': precio_asiento,
+            'ocupado': asiento.estado == 'ocupado' and asiento not in asientos_reserva,
+            'es_mio': asiento in asientos_reserva,
+        })
 
     return render(request, 'clientes/reservas/reserva.html', {
         'reserva': reserva,
         'vuelo': vuelo,
-        'asientos': asientos,
+        'asientos': asientos_info,
     })
+
 
 
 @login_required
 @csrf_exempt
 def confirmar_compra(request):
-    if request.method == "POST":
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Método no permitido."})
+
+    try:
+        data = json.loads(request.body)
+        asiento_ids = data.get("asiento_ids", [])
+        reserva_id = data.get("reserva_id")
+
+        if not asiento_ids:
+            return JsonResponse({"success": False, "error": "No se enviaron asientos."})
+
+        reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
+        total_precio = Decimal("0.00")
+
+        with transaction.atomic():
+            # Liberar los asientos actuales
+            for asiento in reserva.asientos.select_for_update():
+                asiento.estado = "disponible"
+                asiento.save()
+
+            reserva.asientos.clear()
+
+            # Asignar nuevos asientos
+            for asiento_id in asiento_ids:
+                asiento = Asiento.objects.select_for_update().get(id=asiento_id)
+                if asiento.estado == "ocupado":
+                    return JsonResponse({"success": False, "error": f"Asiento {asiento.numero} ya está ocupado."})
+
+                asiento.estado = "ocupado"
+                asiento.save()
+
+                total_precio += PRECIOS_ASIENTO.get(asiento.tipo, Decimal("0.00"))
+                reserva.asientos.add(asiento)
+
+            reserva.estado = "confirmada"
+            reserva.precio = total_precio
+            reserva.save()
+
+            # Crear boleto si no existe
+            if not hasattr(reserva, 'boleto'):
+                boleto = Boleto.objects.create(
+                    reserva=reserva,
+                    codigo_barra=f"BOL-{get_random_string(12).upper()}",
+                    estado='emitido'
+                )
+            else:
+                boleto = reserva.boleto
+
+        # FUERA de la transacción: enviar correo
         try:
-            data = json.loads(request.body)
-            asiento_ids = data.get("asiento_ids", [])
-            reserva_id = data.get("reserva_id")
-
-            if not asiento_ids:
-                return JsonResponse({"success": False, "error": "No se enviaron asientos."})
-
-            reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
-            total_precio = Decimal("0.00")
-
-            with transaction.atomic():
-                # Liberar los asientos actuales
-                for asiento in reserva.asientos.select_for_update():
-                    asiento.estado = "disponible"
-                    asiento.save()
-
-                reserva.asientos.clear()
-
-                # Asignar nuevos asientos
-                for asiento_id in asiento_ids:
-                    asiento = Asiento.objects.select_for_update().get(id=asiento_id)
-                    if asiento.estado == "ocupado":
-                        return JsonResponse({"success": False, "error": f"Asiento {asiento.numero} ya está ocupado."})
-
-                    asiento.estado = "ocupado"
-                    asiento.save()
-
-                    total_precio += PRECIOS_ASIENTO.get(asiento.tipo, Decimal("0.00"))
-                    reserva.asientos.add(asiento)
-
-                reserva.estado = "confirmada"
-                reserva.precio = total_precio
-                reserva.save()
-
-            return JsonResponse({
-                "success": True,
-                "total": str(total_precio),
-                "reserva_id": reserva.id,
-            })
-
+            enviar_boleto_por_mail(reserva)  # <-- solo pasamos "reserva"
+            boleto.enviado_por_mail = True
+            boleto.save()
         except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
+            print(f"No se pudo enviar el boleto: {e}")
 
-    return JsonResponse({"success": False, "error": "Método no permitido."})
+        return JsonResponse({
+            "success": True,
+            "total": str(total_precio),
+            "reserva_id": reserva.id,
+        })
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+    
+from django.core.mail import send_mail
+
+def enviar_boleto_por_mail(reserva, boleto):
+    subject = f"Boleto de tu reserva #{reserva.id}"
+    message = f"Gracias por tu compra. Tu código de boleto es {boleto.codigo_barra}"
+    recipient = [reserva.usuario.email]
+
+    send_mail(
+        subject,
+        message,
+        'no-reply@tuaerolinea.com',
+        recipient,
+        fail_silently=False
+    )
 
 
 @login_required
@@ -727,13 +778,19 @@ def eliminar_reserva(request, reserva_id):
     return render(request, 'clientes/reservas/eliminar.html', {'reserva': reserva})
 
 
-from .models import Reserva, Vuelo, Pasajero, Asiento, Boleto  # ← agregamos Boleto
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.crypto import get_random_string
+from django.contrib import messages
+
+from .models import Reserva, Boleto
+from mail.send import enviar_boleto_por_mail  # ← nuestro módulo mail
 
 @login_required
 def ver_boleto(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
 
-    # Asegurar que exista un boleto (por si la reserva es vieja)
+    # Crear el boleto si no existe
     boleto = getattr(reserva, 'boleto', None)
     if boleto is None:
         boleto = Boleto.objects.create(
@@ -742,21 +799,27 @@ def ver_boleto(request, reserva_id):
             estado='emitido'
         )
 
+    # Enviar el boleto por mail (solo una vez por visualización)
+    if not boleto.enviado_por_mail:
+        try:
+            enviar_boleto_por_mail(reserva)
+            boleto.enviado_por_mail = True
+            boleto.save()
+            messages.success(request, "Boleto enviado por correo exitosamente.")
+        except Exception as e:
+            messages.error(request, f"No se pudo enviar el boleto: {e}")
+
     asientos = list(reserva.asientos.all())
     return render(request, 'clientes/boletos/boleto.html', {
         'reserva': reserva,
         'boleto': boleto,
         'asientos': asientos,
     })
+
 @login_required
 def descargar_boleto(request, reserva_id):
-    """
-    Vista que muestra/permite descargar el boleto en formato HTML imprimible (guarda como PDF desde el navegador).
-    Crea el Boleto si por alguna razón no existe (reservas antiguas).
-    """
     reserva = get_object_or_404(Reserva, id=reserva_id, usuario=request.user)
 
-    # Asegurar existencia del boleto (si por alguna razón no fue creado antes)
     boleto = getattr(reserva, 'boleto', None)
     if boleto is None:
         boleto = Boleto.objects.create(

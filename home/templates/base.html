@@ -24,8 +24,6 @@
             {% if user.rol == "cliente" %}
                 <a href="{% url 'gestion:vuelos_clientes_lista' %}">Vuelos</a>
                 <a href="{% url 'gestion:mis_reservas' %}">Mis Reservas</a>
-
-
             {% endif %}
             
             <a href="{% url 'logout' %}">Cerrar sesión</a>

@@ -157,10 +157,16 @@ class Boleto(models.Model):
     reserva = models.OneToOneField(Reserva, on_delete=models.CASCADE, related_name='boleto')
     codigo_barra = models.CharField(max_length=100, unique=True)
     fecha_emision = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=[
-        ('emitido', 'Emitido'),
-        ('cancelado', 'Cancelado')
-    ])
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('emitido', 'Emitido'),
+            ('cancelado', 'Cancelado'),
+            ('verificado', 'Verificado')  # ← nuevo estado
+        ],
+        default='emitido'
+    )
+    enviado_por_mail = models.BooleanField(default=False)  # ← nuevo campo
 
     def __str__(self):
         return f"Boleto {self.codigo_barra} - {self.reserva.codigo_reserva}"

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'home',
     'gestion',
+    'mail',
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,13 @@ AUTH_USER_MODEL = 'home.Usuario'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_HOST_USER = 'a35eb0f95f6a66'
+EMAIL_HOST_PASSWORD = 'e0cbc9259ce73d'
+EMAIL_PORT = 2525                    # Puerto válido: 25, 465, 587 o 2525
+EMAIL_USE_TLS = False                    # STARTTLS
+DEFAULT_FROM_EMAIL = 'no-reply@tuaerolinea.com'
+
+# Looking to send emails in production? Check out our Email API/SMTP product!

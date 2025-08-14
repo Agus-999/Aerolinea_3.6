@@ -124,6 +124,7 @@
     <h4>Boleto</h4>
     <p><strong>Código de Barra:</strong> {{ reserva.boleto.codigo_barra }}</p>
     <p><strong>Fecha de Emisión:</strong> {{ reserva.boleto.fecha_emision|date:"d/m/Y H:i" }}</p>
+    <a href="{% url 'gestion:descargar_boleto' reserva.id %}" class="btn btn-boleto">🎟️ Descargar Boleto</a>
   {% endif %}
 
   <div class="btn-group">

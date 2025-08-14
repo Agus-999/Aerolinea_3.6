@@ -1,111 +1,111 @@
-🎫 Gestión de Boletos – Módulo para Empleados
+📧 Envío de Boletos por Correo – Módulo Automático
 
-Un módulo del sistema de gestión de vuelos desarrollado en Django, que permite a los empleados ver, listar y verificar boletos de los pasajeros de manera rápida y segura.
+Un módulo del sistema de gestión de vuelos desarrollado en Django, que envía automáticamente por correo electrónico el boleto de vuelo al pasajero una vez confirmada su reserva.
 
 🚀 Funcionalidades principales
 
-📋 Lista completa de boletos con información detallada:
+📩 Generación automática de boletos en HTML con datos completos de la reserva:
 
-Código de barra
+Nombre y datos de contacto del pasajero
 
-Nombre del pasajero
+Código de boleto y código de reserva
 
-Documento
+Origen, destino, fecha y hora de vuelo
 
-Vuelo
+Lista de asientos asignados con su tipo y precio
 
-Fecha de salida
+Precio total de la reserva
 
-Precio
+📨 Envío automático del correo electrónico al email del pasajero después de completar la compra.
 
-Estado del boleto
+💡 Plantilla HTML personalizada con diseño claro y ordenado para una mejor experiencia del pasajero.
 
-🔍 Verificación de boletos: los empleados pueden verificar si un boleto es válido y cambiar su estado de “emitido” a “verificado” o “confirmado”.
-
-🎨 Diseño moderno tipo “ticket” con colores según el estado.
-
-🔒 Acceso exclusivo para empleados autenticados.
-
-🖥️ Interfaz responsive y clara, optimizada para desktops y tablets.
+🔄 Adaptación dinámica del contenido del mail para mostrar correctamente los precios de los asientos según su tipo (económico, ejecutivo, primera clase, premium, etc.).
 
 📁 Estructura de archivos y carpetas
+
 gestion/
-├── migrations/
 ├── templates/
-│   └── empleados/
-│       └── boletos/
-│           ├── lista_boletos.html
-│           └── verificar_boleto.html
-├── static/
-│   └── (CSS, JS, imágenes, etc.)
-├── forms.py
-├── models.py
-├── urls.py
-├── views.py
-└── tests.py
+│   └── boletos/
+│       └── boleto_email.html   # Plantilla HTML del correo
+├── utils/
+│   └── enviar_boleto.py        # Función para generar y enviar el mail
+├── models.py                   # Modelos de Reserva, Asiento y Boleto
+├── views.py                    # Lógica para disparar el envío del mail
 
-🔗 URLs principales
-Ruta	Vista	Descripción
-/gestion/empleados/boletos/	lista_boletos_empleado	Lista todos los boletos disponibles
-/gestion/empleados/boletos/verificar/<codigo>/	verificar_boleto_empleado	Verifica un boleto específico y cambia su estado
-🗃️ Modelo principal (models.py)
 
-Boleto
+🔗 Flujo de envío de correo
 
-reserva → relación con la reserva del pasajero
+El pasajero realiza la reserva en el sistema.
 
-codigo_barra → código único del boleto
+Una vez confirmada, se generan:
 
-estado → emitido, verificado, etc.
+Datos de la reserva
 
-Método __str__() para mostrar el código de manera legible
+Lista de asientos con tipo y precio (usando el diccionario PRECIOS_ASIENTO)
+
+Se renderiza la plantilla boleto_email.html con todos los datos.
+
+Se envía el correo usando la función send_mail de Django, con el HTML embebido.
+
+El pasajero recibe su boleto directamente en su bandeja de entrada.
+
+🗃️ Modelo de datos utilizado (models.py)
 
 Reserva
+Contiene información del pasajero, vuelo, asientos y precio total.
 
-Información del pasajero, vuelo, asientos y precio
+Asiento
+Guarda número, tipo y precio (obtenido desde PRECIOS_ASIENTO según el tipo).
 
-Estado de la reserva
+Boleto
+Código único, relación con la reserva y estado del boleto.
 
 ⚙️ Lógica y flujo de trabajo
 
-Los empleados deben estar autenticados para acceder al módulo.
+El sistema obtiene los asientos asignados de la reserva.
 
-Los boletos se listan en cards visuales tipo ticket para mejorar la experiencia.
+Cada asiento es mostrado con:
 
-Al verificar un boleto:
+Número
 
-Se valida que esté emitido y la reserva esté confirmada.
+Tipo
 
-El estado del boleto se actualiza a verificado.
+Precio según PRECIOS_ASIENTO
 
-Todas las operaciones tienen feedback visual mediante alertas o cambios de color según estado.
+Si es premium, económico, primera, etc., el valor se calcula automáticamente.
 
-🖥️ Frontend y experiencia de usuario
+El email se genera como HTML y se envía usando configuración SMTP de Django.
 
-Diseño moderno con Bootstrap y estilos tipo ticket.
+🖥️ Frontend y experiencia del pasajero
 
-Colores y badges para diferenciar estados de boletos.
+Plantilla HTML optimizada para lectura en clientes de correo.
 
-Botón Verificar en cada boleto para un acceso rápido.
+Tabla con los asientos asignados y precios.
 
-Lista responsive que se ajusta a diferentes tamaños de pantalla.
+Estilo claro, con secciones separadas para:
+
+Datos del pasajero
+
+Datos de la reserva
+
+Datos del vuelo
+
+Asientos y precios
+
+Mensaje final de agradecimiento.
 
 📦 Cómo poner en marcha este módulo
 
-Asegurarse de tener el proyecto principal clonado y virtualenv activado.
+Configurar en settings.py las credenciales SMTP para envío de mails.
 
-Ejecutar migraciones si hay cambios en Boleto o Reserva:
+Crear la plantilla boleto_email.html dentro de templates/boletos/.
 
-python manage.py makemigrations gestion
-python manage.py migrate
+Definir el diccionario PRECIOS_ASIENTO con los precios por tipo.
 
+Llamar a la función enviar_boleto_email(reserva) desde la vista que confirma la reserva.
 
-Levantar servidor local:
-
-python manage.py runserver
-
-
-Acceder a: http://localhost:8000/gestion/empleados/boletos/ para ver la lista de boletos.
+Probar con python manage.py runserver y realizar una reserva para verificar el envío.
 
 👨‍💻 Autor
 
