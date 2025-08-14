@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="ticket-container">
+  <h2>Verificar Boleto</h2>
+
+  <div class="ticket">
+    <div class="ticket-header">
+      <h3>Boleto de Vuelo</h3>
+      <span class="ticket-status">{{ boleto.get_estado_display }}</span>
+    </div>
+
+    <div class="ticket-body">
+      <div class="row">
+        <div class="col">
+          <h4>Reserva</h4>
+          <p><strong>Código:</strong> {{ boleto.reserva.codigo_reserva }}</p>
+          <p><strong>Fecha emisión:</strong> {{ boleto.fecha_emision|date:"d/m/Y H:i" }}</p>
+        </div>
+
+        <div class="col">
+          <h4>Vuelo</h4>
+          <p><strong>Código:</strong> {{ boleto.reserva.vuelo.codigo_vuelo }}</p>
+          <p><strong>Ruta:</strong> {{ boleto.reserva.vuelo.origen }} → {{ boleto.reserva.vuelo.destino }}</p>
+          <p><strong>Salida:</strong> {{ boleto.reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}</p>
+          <p><strong>Llegada:</strong> {{ boleto.reserva.vuelo.fecha_llegada|date:"d/m/Y H:i" }}</p>
+        </div>
+
+        <div class="col">
+          <h4>Pasajero</h4>
+          <p><strong>Nombre:</strong> {{ boleto.reserva.pasajero.nombre }}</p>
+          <p><strong>Documento:</strong> {{ boleto.reserva.pasajero.documento }}</p>
+          <p><strong>Email:</strong> {{ boleto.reserva.pasajero.email|default:"—" }}</p>
+          <p><strong>Teléfono:</strong> {{ boleto.reserva.pasajero.telefono|default:"—" }}</p>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col">
+          <h4>Asientos</h4>
+          {% if boleto.reserva.asientos.all %}
+          <ul class="seat-list">
+            {% for asiento in boleto.reserva.asientos.all %}
+            <li>{{ asiento.numero }} ({{ asiento.tipo|title }})</li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p>Sin asientos asignados</p>
+          {% endif %}
+        </div>
+
+        <div class="col">
+          <h4>Pago</h4>
+          <p><strong>Total:</strong> ${{ boleto.reserva.precio|default:"0.00" }}</p>
+        </div>
+      </div>
+
+      <div class="barcode-block">
+        <div class="barcode-label">Código de Barra</div>
+        <div class="barcode">{{ boleto.codigo_barra }}</div>
+        <div class="barcode-note">Presentar junto con documento válido</div>
+      </div>
+    </div>
+
+    <div class="ticket-footer">
+      <a href="{% url 'gestion:lista_boletos_empleado' %}" class="btn btn-secondary btn-sm">← Volver</a>
+      {% if boleto.estado != 'verificado' %}
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success btn-sm">✅ Verificar Boleto</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.ticket-container { max-width: 900px; margin: 20px auto; }
+.ticket { background: #f9f9f9; border-radius: 12px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ticket-header h3 { margin: 0; }
+.ticket-status { padding: 4px 8px; background: #ffd700; border-radius: 6px; font-weight: 600; }
+.ticket-body .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.ticket-body .col { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+.seat-list { padding-left: 18px; }
+.barcode-block { text-align: center; margin-top: 16px; }
+.barcode { font-family: monospace; font-size: 20px; letter-spacing: 2px; border: 2px solid #000; display: inline-block; padding: 8px 12px; border-radius: 6px; }
+.barcode-label { font-size: 12px; opacity: .7; margin-bottom: 4px; }
+.barcode-note { font-size: 12px; opacity: .7; margin-top: 4px; }
+.ticket-footer { text-align: right; margin-top: 16px; }
+.ticket-footer .btn { margin-left: 4px; }
+@media print {
+  body { background: #fff !important; }
+  .ticket { box-shadow: none; border: 1px solid #000; }
+  .ticket-footer { display: none; }
+}
+</style>
+{% endblock %}

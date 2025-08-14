@@ -401,6 +401,38 @@ def eliminar_reserva_empleado(request, reserva_id):
 
     return render(request, 'empleados/reservas/eliminar_reserva.html', {'reserva': reserva})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Boleto
+
+@login_required
+def lista_boletos_empleado(request):
+    boletos = Boleto.objects.select_related('reserva', 'reserva__pasajero', 'reserva__vuelo').all()
+    return render(request, 'empleados/boletos/lista_boletos.html', {
+        'boletos': boletos,
+    })
+
+@login_required
+def verificar_boleto_empleado(request, codigo):
+    boleto = get_object_or_404(
+        Boleto.objects.select_related('reserva', 'reserva__pasajero', 'reserva__vuelo'),
+        codigo_barra=codigo
+    )
+
+    # Verificación: solo se puede verificar si está emitido y la reserva está confirmada
+    puede_verificar = boleto.estado == 'emitido' and boleto.reserva.estado == 'confirmada'
+
+    if request.method == "POST" and puede_verificar:
+        boleto.estado = 'verificado'  # o 'confirmado' según tu modelo
+        boleto.save()
+        messages.success(request, f"Boleto {boleto.codigo_barra} verificado correctamente.")
+        return redirect('gestion:lista_boletos_empleado')
+
+    return render(request, 'empleados/boletos/verificar_boleto.html', {
+        'boleto': boleto,
+        'puede_verificar': puede_verificar,
+    })
 
 
 

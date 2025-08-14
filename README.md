@@ -1,48 +1,43 @@
-🎟️ Gestión de Reservas y Selección de Asientos
+🎫 Gestión de Boletos – Módulo para Empleados
 
-Un módulo del sistema de gestión de vuelos desarrollado en Django que permite a los empleados ver, crear, editar y eliminar reservas, así como asignar asientos con cálculo automático del precio total.
+Un módulo del sistema de gestión de vuelos desarrollado en Django, que permite a los empleados ver, listar y verificar boletos de los pasajeros de manera rápida y segura.
 
 🚀 Funcionalidades principales
 
-✈️ Lista de reservas con información del vuelo y pasajero
-🆕 Crear nueva reserva con formulario unificado
-✏️ Editar reserva y datos del pasajero asociados
-💺 Selección interactiva de asientos con actualización de precio total
-💰 Cálculo automático del precio por tipo de asiento
-🗑️ Eliminar reserva con confirmación previa
-🔒 Acceso exclusivo para empleados autenticados
+📋 Lista completa de boletos con información detallada:
 
-📋 Detalle de funciones principales
+Código de barra
 
-Selección de Asientos:
+Nombre del pasajero
 
-Visualiza asientos disponibles, ocupados y asignados al empleado.
+Documento
 
-Muestra nombre, fila, columna, tipo y precio por asiento.
+Vuelo
 
-Actualización del total de forma inmediata al confirmar.
+Fecha de salida
 
-Detalle de Reserva:
+Precio
 
-Lista de asientos asignados con su precio individual.
+Estado del boleto
 
-Visualización del precio total de la reserva.
+🔍 Verificación de boletos: los empleados pueden verificar si un boleto es válido y cambiar su estado de “emitido” a “verificado” o “confirmado”.
 
-Posibilidad de modificar asientos y actualizar pasajero/vuelo.
+🎨 Diseño moderno tipo “ticket” con colores según el estado.
+
+🔒 Acceso exclusivo para empleados autenticados.
+
+🖥️ Interfaz responsive y clara, optimizada para desktops y tablets.
 
 📁 Estructura de archivos y carpetas
 gestion/
 ├── migrations/
 ├── templates/
 │   └── empleados/
-│       └── reservas/
-│           ├── detalle_reserva.html
-│           ├── asientos.html
-│           ├── lista.html
-│           ├── eliminar.html
-│           └── formulario.html
+│       └── boletos/
+│           ├── lista_boletos.html
+│           └── verificar_boleto.html
 ├── static/
-│   └── (archivos estáticos: CSS, JS, imágenes)
+│   └── (CSS, JS, imágenes, etc.)
 ├── forms.py
 ├── models.py
 ├── urls.py
@@ -51,76 +46,66 @@ gestion/
 
 🔗 URLs principales
 Ruta	Vista	Descripción
-/empleados/reservas/	lista_reservas_empleado	Lista de todas las reservas
-/empleados/reservas/nueva/	crear_reserva_empleado	Crear una nueva reserva
-/empleados/reservas/<id>/	detalle_reserva_empleado	Ver y editar detalle de la reserva
-/empleados/reservas/<id>/eliminar/	eliminar_reserva_empleado	Confirmar y eliminar una reserva
-/empleados/reservas/<id>/asientos/	ver_asientos_empleado	Seleccionar o modificar asientos
-/empleados/reservas/confirmar_asientos/	confirmar_compra_empleado	Guardar asientos seleccionados
-🗃️ Modelos principales (models.py)
+/gestion/empleados/boletos/	lista_boletos_empleado	Lista todos los boletos disponibles
+/gestion/empleados/boletos/verificar/<codigo>/	verificar_boleto_empleado	Verifica un boleto específico y cambia su estado
+🗃️ Modelo principal (models.py)
+
+Boleto
+
+reserva → relación con la reserva del pasajero
+
+codigo_barra → código único del boleto
+
+estado → emitido, verificado, etc.
+
+Método __str__() para mostrar el código de manera legible
 
 Reserva
 
-relación con Pasajero
+Información del pasajero, vuelo, asientos y precio
 
-relación con Vuelo
-
-relación con Asiento (M2M)
-
-precio total calculado dinámicamente
-
-Asiento
-
-número, fila, columna
-
-tipo (económico, primera, premium, etc.)
-
-estado (disponible, ocupado)
-
-relación con avión
+Estado de la reserva
 
 ⚙️ Lógica y flujo de trabajo
 
-Autenticación obligatoria para todas las operaciones
+Los empleados deben estar autenticados para acceder al módulo.
 
-Cálculo automático de precios en detalle_reserva_empleado y asientos.html
+Los boletos se listan en cards visuales tipo ticket para mejorar la experiencia.
 
-Actualización del total al confirmar selección
+Al verificar un boleto:
 
-Reseteo de asientos y precios si cambia el vuelo en la reserva
+Se valida que esté emitido y la reserva esté confirmada.
 
-Bloqueo de asientos ocupados para evitar conflictos
+El estado del boleto se actualiza a verificado.
+
+Todas las operaciones tienen feedback visual mediante alertas o cambios de color según estado.
 
 🖥️ Frontend y experiencia de usuario
 
-Interfaz responsive con Bootstrap
+Diseño moderno con Bootstrap y estilos tipo ticket.
 
-Tabla de asientos con colores y estados claros
+Colores y badges para diferenciar estados de boletos.
 
-Checkbox para seleccionar asientos disponibles
+Botón Verificar en cada boleto para un acceso rápido.
 
-Cálculo y visualización del total en el detalle de reserva
-
-Alertas y mensajes claros en operaciones exitosas o con error
+Lista responsive que se ajusta a diferentes tamaños de pantalla.
 
 📦 Cómo poner en marcha este módulo
 
-Clonar el proyecto principal y activar el entorno virtual
+Asegurarse de tener el proyecto principal clonado y virtualenv activado.
 
-Ejecutar migraciones si hay cambios en modelos:
+Ejecutar migraciones si hay cambios en Boleto o Reserva:
 
 python manage.py makemigrations gestion
 python manage.py migrate
 
 
-Levantar el servidor local:
+Levantar servidor local:
 
 python manage.py runserver
 
 
-Acceder a:
-
-http://localhost:8000/empleados/reservas/
+Acceder a: http://localhost:8000/gestion/empleados/boletos/ para ver la lista de boletos.
 
 👨‍💻 Autor
 

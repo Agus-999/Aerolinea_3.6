@@ -43,5 +43,11 @@ urlpatterns = [
     # ✅ Nueva: ver/descargar boleto (HTML imprimible a PDF)
     path('reservas/<int:reserva_id>/boleto/descargar/', views.descargar_boleto, name='descargar_boleto'),
 
+    # Lista de boletos para empleados
+    path('empleados/boletos/', views.lista_boletos_empleado, name='lista_boletos_empleado'),
+
+    # Verificar un boleto específico
+    path('empleados/boletos/verificar/<str:codigo>/', views.verificar_boleto_empleado, name='verificar_boleto_empleado'),
+
 ]
 
