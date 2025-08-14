@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Seleccionar Asientos - Reserva {{ reserva.codigo_reserva }}</h2>
+<form id="asientos-form">
+  {% csrf_token %}
+  <table class="table table-bordered" border="1">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Fila</th>
+        <th>Columna</th>
+        <th>Tipo</th>
+        <th>Precio</th>
+        <th>Seleccionar</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for asiento in asientos %}
+      <tr>
+        <td>{{ asiento.numero }}</td>
+        <td>{{ asiento.fila }}</td>
+        <td>{{ asiento.columna }}</td>
+        <td>{{ asiento.tipo|capfirst }}</td>
+        <td>${{ asiento.precio }}</td>
+        <td>
+          {% if asiento.es_mio %}
+            <input type="checkbox" checked disabled data-precio="{{ asiento.precio }}">
+          {% elif asiento.ocupado %}
+            -
+          {% else %}
+            <input type="checkbox" name="asiento_ids" value="{{ asiento.id }}" data-precio="{{ asiento.precio }}">
+          {% endif %}
+        </td>
+        <td>{{ asiento.estado|capfirst }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4>Total: $<span id="total-precio">0.00</span></h4>
+
+  <button type="button" id="confirmar-btn" class="btn btn-success">Confirmar Asientos</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="asiento_ids"]');
+    const totalPrecioEl = document.getElementById('total-precio');
+    const confirmarBtn = document.getElementById('confirmar-btn');
+
+    function calcularTotal() {
+        let total = 0;
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                total += parseFloat(cb.getAttribute('data-precio'));
+            }
+        });
+        totalPrecioEl.textContent = total.toFixed(2);
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', calcularTotal));
+    calcularTotal(); // Inicial
+
+    confirmarBtn.addEventListener('click', function() {
+        const ids = Array.from(document.querySelectorAll('input[name="asiento_ids"]:checked')).map(cb => cb.value);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const reservaId = Number("{{ reserva.id }}");
+
+        fetch("{% url 'gestion:confirmar_compra_empleado' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ asiento_ids: ids, reserva_id: reservaId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Asientos confirmados. Total: $" + data.total);
+                window.location.href = "{% url 'gestion:detalle_reserva_empleado' reserva.id %}";
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Ocurrió un error al confirmar los asientos.");
+        });
+    });
+});
+</script>
+{% endblock %}

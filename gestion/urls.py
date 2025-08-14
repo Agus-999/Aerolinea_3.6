@@ -4,6 +4,7 @@ from . import views
 app_name = 'gestion'
 
 urlpatterns = [
+    # EMPLEADOS
     path('aviones/', views.lista_aviones, name='lista_aviones'),
     path('aviones/nuevo/', views.nuevo_avion, name='nuevo_avion'),
     path('aviones/<int:pk>/editar/', views.editar_avion, name='editar_avion'),
@@ -19,9 +20,15 @@ urlpatterns = [
     path('pasajeros/nuevo/', views.nuevo_pasajero, name='nuevo_pasajero'),
     path('pasajeros/<int:pasajero_id>/editar/', views.editar_pasajero, name='editar_pasajero'),
     path('pasajeros/<int:pasajero_id>/eliminar/', views.eliminar_pasajero, name='eliminar_pasajero'),
-   
-   
-   # CLIENTES – VUELOS
+
+    path('empleados/reservas/', views.lista_reservas_empleado, name='lista_reservas_empleado'),
+    path('empleados/reservas/nueva/', views.crear_reserva_empleado, name='crear_reserva_empleado'),
+    path('empleados/reservas/<int:reserva_id>/', views.detalle_reserva_empleado, name='detalle_reserva_empleado'),
+    path('empleados/reservas/<int:reserva_id>/eliminar/', views.eliminar_reserva_empleado, name='eliminar_reserva_empleado'),
+    path('empleados/reservas/<int:reserva_id>/asientos/', views.ver_asientos_empleado, name='ver_asientos_empleado'),
+    path('empleados/reservas/confirmar_asientos/', views.confirmar_compra_empleado, name='confirmar_compra_empleado'),
+
+   # CLIENTES
     path('clientes/vuelos/', views.vuelos_clientes_lista, name='vuelos_clientes_lista'),
     path('clientes/vuelos/<int:pk>/', views.vuelos_clientes_detalle, name='vuelos_clientes_detalle'),
 

@@ -194,6 +194,216 @@ def eliminar_pasajero(request, pasajero_id):
         return redirect('gestion:lista_pasajeros')
     return render(request, 'empleados/pasajeros/eliminar.html', {'pasajero': pasajero})
 
+from decimal import Decimal
+import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.crypto import get_random_string
+
+from .models import Reserva, Vuelo, Pasajero, Asiento, Boleto
+from .forms import ReservaEmpleadoForm, PasajeroForm
+
+# Precios por tipo de asiento
+PRECIOS_ASIENTO = {
+    'economico': Decimal('100.00'),
+    'premium': Decimal('200.00'),
+    'ejecutivo': Decimal('300.00'),
+    'primera': Decimal('400.00'),
+}
+
+@login_required
+def lista_reservas_empleado(request):
+    reservas = Reserva.objects.prefetch_related('asientos').order_by('-fecha_reserva')
+    return render(request, 'empleados/reservas/lista_reservas.html', {'reservas': reservas})
+
+
+@login_required
+def crear_reserva_empleado(request):
+    if request.method == 'POST':
+        reserva_form = ReservaEmpleadoForm(request.POST)
+
+        # Tomamos los datos del pasajero directamente
+        nombre = request.POST.get('nombre')
+        documento = request.POST.get('documento')
+        email = request.POST.get('email')
+        telefono = request.POST.get('telefono')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento')
+        tipo_documento = request.POST.get('tipo_documento')
+
+        if reserva_form.is_valid() and nombre and documento:
+            with transaction.atomic():
+                pasajero, _ = Pasajero.objects.get_or_create(
+                    documento=documento,
+                    defaults={
+                        'nombre': nombre,
+                        'email': email,
+                        'telefono': telefono,
+                        'fecha_nacimiento': fecha_nacimiento,
+                        'tipo_documento': tipo_documento,
+                        'usuario': request.user,  # opcional, asignamos empleado como creador
+                    }
+                )
+
+                reserva = reserva_form.save(commit=False)
+                reserva.pasajero = pasajero
+                reserva.usuario = request.user
+                reserva.precio = Decimal('0.00')  # se calculará después
+                reserva.codigo_reserva = str(get_random_string(8)).upper()
+                reserva.save()
+
+                # Crear boleto automático
+                Boleto.objects.create(
+                    reserva=reserva,
+                    codigo_barra=f"BOL-{get_random_string(12).upper()}",
+                    estado='emitido'
+                )
+
+                messages.success(request, "Reserva creada. Selecciona los asientos.")
+                return redirect('gestion:ver_asientos_empleado', reserva_id=reserva.id)
+        else:
+            messages.error(request, "Corrige los errores en el formulario de reserva.")
+
+    else:
+        reserva_form = ReservaEmpleadoForm()
+
+    return render(request, 'empleados/reservas/formulario_reserva.html', {
+        'reserva_form': reserva_form,
+    })
+
+
+@login_required
+def ver_asientos_empleado(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    vuelo = reserva.vuelo
+    asientos = Asiento.objects.filter(avion=vuelo.avion).order_by('fila', 'columna')
+    asientos_reserva = reserva.asientos.all()
+
+    for asiento in asientos:
+        asiento.precio = PRECIOS_ASIENTO.get(asiento.tipo, Decimal('0.00'))
+        asiento.ocupado = asiento.estado == 'ocupado' and asiento not in asientos_reserva
+        asiento.es_mio = asiento in asientos_reserva
+        # Asegurar que tenga nombre para mostrar
+        if not hasattr(asiento, 'nombre'):
+            asiento.nombre = f"Asiento {asiento.fila}{asiento.columna}"
+
+    return render(request, 'empleados/reservas/asientos.html', {
+        'reserva': reserva,
+        'vuelo': vuelo,
+        'asientos': asientos,
+    })
+
+
+
+@login_required
+@csrf_exempt
+def confirmar_compra_empleado(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            asiento_ids = data.get("asiento_ids", [])
+            reserva_id = data.get("reserva_id")
+            reserva = get_object_or_404(Reserva, id=reserva_id)
+
+            total_precio = Decimal("0.00")
+            with transaction.atomic():
+                # Liberar asientos anteriores
+                for asiento in reserva.asientos.select_for_update():
+                    asiento.estado = "disponible"
+                    asiento.save()
+                reserva.asientos.clear()
+
+                # Asignar nuevos asientos
+                for asiento_id in asiento_ids:
+                    asiento = Asiento.objects.select_for_update().get(id=asiento_id)
+                    if asiento.estado == "ocupado":
+                        return JsonResponse({"success": False, "error": f"Asiento {asiento.numero} ya ocupado."})
+                    asiento.estado = "ocupado"
+                    asiento.save()
+                    reserva.asientos.add(asiento)
+                    total_precio += PRECIOS_ASIENTO.get(asiento.tipo, Decimal("0.00"))
+
+                reserva.precio = total_precio
+                reserva.estado = "confirmada"
+                reserva.save()
+
+            return JsonResponse({"success": True, "total": str(total_precio), "reserva_id": reserva.id})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Método no permitido."})
+
+
+@login_required
+def detalle_reserva_empleado(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    pasajero = reserva.pasajero
+
+    # Calculamos el precio de cada asiento
+    asientos_con_precio = []
+    total_precio = Decimal('0.00')
+    for asiento in reserva.asientos.all():
+        asiento.precio = PRECIOS_ASIENTO.get(asiento.tipo, Decimal('0.00'))
+        asientos_con_precio.append(asiento)
+        total_precio += asiento.precio
+
+    if request.method == 'POST':
+        reserva_form = ReservaEmpleadoForm(request.POST, instance=reserva)
+        pasajero_form = PasajeroForm(request.POST, instance=pasajero)
+
+        if reserva_form.is_valid() and pasajero_form.is_valid():
+            with transaction.atomic():
+                pasajero_form.save()
+                reserva_form.save()
+                # Reiniciar precio y estado de asientos si cambia el vuelo
+                if 'vuelo' in reserva_form.changed_data:
+                    for asiento in reserva.asientos.all():
+                        asiento.estado = 'disponible'
+                        asiento.save()
+                    reserva.asientos.clear()
+                    reserva.precio = Decimal('0.00')
+                reserva.save()
+                messages.success(request, "Reserva actualizada correctamente.")
+                return redirect('gestion:detalle_reserva_empleado', reserva_id=reserva.id)
+        else:
+            messages.error(request, "Corrige los errores en los formularios.")
+    else:
+        reserva_form = ReservaEmpleadoForm(instance=reserva)
+        pasajero_form = PasajeroForm(instance=pasajero)
+
+    return render(request, 'empleados/reservas/detalle_reserva.html', {
+        'reserva_form': reserva_form,
+        'pasajero_form': pasajero_form,
+        'reserva': reserva,
+        'asientos': asientos_con_precio,  # Pasamos los asientos con precio
+        'total_precio': total_precio,     # Pasamos el total
+    })
+
+
+
+
+@login_required
+def eliminar_reserva_empleado(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            for asiento in reserva.asientos.select_for_update():
+                asiento.estado = 'disponible'
+                asiento.save()
+            reserva.asientos.clear()
+            reserva.delete()
+        messages.success(request, "Reserva eliminada correctamente.")
+        return redirect('gestion:lista_reservas_empleado')
+
+    return render(request, 'empleados/reservas/eliminar_reserva.html', {'reserva': reserva})
+
+
+
+
 
 # CLIENTES
 

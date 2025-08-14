@@ -17,6 +17,9 @@
                 <a href="{% url 'gestion:lista_aviones' %}">Gestión Aviones</a>
                 <a href="{% url 'gestion:lista_vuelos' %}">Gestión Vuelos</a> |
                 <a href="{% url 'gestion:lista_pasajeros' %}">Gestión Pasajeros</a>
+                <a href="{% url 'gestion:lista_reservas_empleado' %}">Gestión Reservas</a>
+
+
             {% endif %}
 
             {% if user.rol == "cliente" %}

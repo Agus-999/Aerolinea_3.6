@@ -1,31 +1,48 @@
-🧳 Gestión de Pasajeros
-Un módulo del sistema de gestión de vuelos desarrollado en Django para que los empleados puedan ver, crear, editar y eliminar pasajeros de manera sencilla y segura.
+🎟️ Gestión de Reservas y Selección de Asientos
+
+Un módulo del sistema de gestión de vuelos desarrollado en Django que permite a los empleados ver, crear, editar y eliminar reservas, así como asignar asientos con cálculo automático del precio total.
 
 🚀 Funcionalidades principales
-👤 Lista de pasajeros con información completa
 
-📝 Crear nuevo pasajero desde formulario unificado
-
-✏️ Editar pasajero usando el mismo formulario de creación
-
-🗑️ Eliminar pasajero con confirmación previa
-
+✈️ Lista de reservas con información del vuelo y pasajero
+🆕 Crear nueva reserva con formulario unificado
+✏️ Editar reserva y datos del pasajero asociados
+💺 Selección interactiva de asientos con actualización de precio total
+💰 Cálculo automático del precio por tipo de asiento
+🗑️ Eliminar reserva con confirmación previa
 🔒 Acceso exclusivo para empleados autenticados
 
-📋 Detalle completo del pasajero con todos sus datos de contacto
+📋 Detalle de funciones principales
+
+Selección de Asientos:
+
+Visualiza asientos disponibles, ocupados y asignados al empleado.
+
+Muestra nombre, fila, columna, tipo y precio por asiento.
+
+Actualización del total de forma inmediata al confirmar.
+
+Detalle de Reserva:
+
+Lista de asientos asignados con su precio individual.
+
+Visualización del precio total de la reserva.
+
+Posibilidad de modificar asientos y actualizar pasajero/vuelo.
 
 📁 Estructura de archivos y carpetas
 gestion/
 ├── migrations/
 ├── templates/
-│ └── empleados/
-│ └── pasajeros/
-│ ├── detalle.html
-│ ├── eliminar.html
-│ ├── formulario.html
-│ └── lista.html
+│   └── empleados/
+│       └── reservas/
+│           ├── detalle_reserva.html
+│           ├── asientos.html
+│           ├── lista.html
+│           ├── eliminar.html
+│           └── formulario.html
 ├── static/
-│ └── (archivos estáticos: CSS, JS, imágenes)
+│   └── (archivos estáticos: CSS, JS, imágenes)
 ├── forms.py
 ├── models.py
 ├── urls.py
@@ -34,60 +51,78 @@ gestion/
 
 🔗 URLs principales
 Ruta	Vista	Descripción
-/pasajeros/	lista_pasajeros	Lista de todos los pasajeros
-/pasajeros/nuevo/	nuevo_pasajero	Crear un nuevo pasajero
-/pasajeros/<id>/editar/	editar_pasajero	Editar datos de un pasajero existente
-/pasajeros/<id>/eliminar/	eliminar_pasajero	Confirmar y eliminar un pasajero
-/pasajeros/<id>/	detalle_pasajero	Ver detalle completo del pasajero
+/empleados/reservas/	lista_reservas_empleado	Lista de todas las reservas
+/empleados/reservas/nueva/	crear_reserva_empleado	Crear una nueva reserva
+/empleados/reservas/<id>/	detalle_reserva_empleado	Ver y editar detalle de la reserva
+/empleados/reservas/<id>/eliminar/	eliminar_reserva_empleado	Confirmar y eliminar una reserva
+/empleados/reservas/<id>/asientos/	ver_asientos_empleado	Seleccionar o modificar asientos
+/empleados/reservas/confirmar_asientos/	confirmar_compra_empleado	Guardar asientos seleccionados
+🗃️ Modelos principales (models.py)
 
-🗃️ Modelo principal (models.py)
-Pasajero
-usuario (opcional) → relación con el usuario autenticado
+Reserva
 
-nombre, documento, email, telefono
+relación con Pasajero
 
-fecha_nacimiento, tipo_documento (DNI, Pasaporte, Otro)
+relación con Vuelo
 
-Método __str__() para mostrar el nombre en interfaces y listas
+relación con Asiento (M2M)
+
+precio total calculado dinámicamente
+
+Asiento
+
+número, fila, columna
+
+tipo (económico, primera, premium, etc.)
+
+estado (disponible, ocupado)
+
+relación con avión
 
 ⚙️ Lógica y flujo de trabajo
+
 Autenticación obligatoria para todas las operaciones
 
-Validaciones de formulario para datos completos y correctos
+Cálculo automático de precios en detalle_reserva_empleado y asientos.html
 
-Edición y creación usan el mismo formulario (formulario.html)
+Actualización del total al confirmar selección
 
-Eliminación solicita confirmación antes de borrar el registro
+Reseteo de asientos y precios si cambia el vuelo en la reserva
 
-Acceso restringido solo a personal autorizado
+Bloqueo de asientos ocupados para evitar conflictos
 
 🖥️ Frontend y experiencia de usuario
-Interfaz clara y responsive con Bootstrap
 
-Listado con tabla o grid según necesidad
+Interfaz responsive con Bootstrap
 
-Formulario de creación/edición con campos obligatorios destacados
+Tabla de asientos con colores y estados claros
 
-Alertas y mensajes para feedback inmediato
+Checkbox para seleccionar asientos disponibles
 
-Confirmación visual al eliminar un pasajero
+Cálculo y visualización del total en el detalle de reserva
+
+Alertas y mensajes claros en operaciones exitosas o con error
 
 📦 Cómo poner en marcha este módulo
-Asegurarse de tener el proyecto principal clonado y virtualenv activado
 
-Ejecutar migraciones si hay cambios en Pasajero:
+Clonar el proyecto principal y activar el entorno virtual
 
-bash
-Copiar código
+Ejecutar migraciones si hay cambios en modelos:
+
 python manage.py makemigrations gestion
 python manage.py migrate
-Levantar servidor local:
 
-bash
-Copiar código
+
+Levantar el servidor local:
+
 python manage.py runserver
-Acceder a: http://localhost:8000/pasajeros/ para ver el listado
+
+
+Acceder a:
+
+http://localhost:8000/empleados/reservas/
 
 👨‍💻 Autor
+
 Agustín Fasano
 Estudiante de Desarrollo de Software en ITEC

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Detalle Reserva {{ reserva.codigo_reserva }}</h2>
+<h4>Pasajero</h4>
+<form method="post">
+  {% csrf_token %}
+  {{ pasajero_form.as_p }}
+  <h4>Reserva</h4>
+  {{ reserva_form.as_p }}
+  <button type="submit" class="btn btn-success">Actualizar</button>
+</form>
+
+<h4>Asientos</h4>
+<ul>
+  {% for asiento in asientos %}
+    <li>{{ asiento.numero }} ({{ asiento.tipo }}) - ${{ asiento.precio }}</li>
+  {% empty %}
+    <li>Sin asientos asignados</li>
+  {% endfor %}
+</ul>
+
+{% if asientos %}
+  <h5><strong>Total: ${{ total_precio }}</strong></h5>
+{% endif %}
+
+<a href="{% url 'gestion:ver_asientos_empleado' reserva.id %}" class="btn btn-warning">Seleccionar/Modificar Asientos</a>
+<a href="{% url 'gestion:eliminar_reserva_empleado' reserva.id %}" class="btn btn-danger">Eliminar Reserva</a>
+<a href="{% url 'gestion:lista_reservas_empleado' %}" class="btn btn-secondary">Volver a lista</a>
+{% endblock %}
