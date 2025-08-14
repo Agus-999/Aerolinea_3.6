@@ -1,31 +1,43 @@
-🧳 Gestión de Pasajeros
-Un módulo del sistema de gestión de vuelos desarrollado en Django para que los empleados puedan ver, crear, editar y eliminar pasajeros de manera sencilla y segura.
+🎫 Gestión de Boletos – Módulo para Empleados
+
+Un módulo del sistema de gestión de vuelos desarrollado en Django, que permite a los empleados ver, listar y verificar boletos de los pasajeros de manera rápida y segura.
 
 🚀 Funcionalidades principales
-👤 Lista de pasajeros con información completa
 
-📝 Crear nuevo pasajero desde formulario unificado
+📋 Lista completa de boletos con información detallada:
 
-✏️ Editar pasajero usando el mismo formulario de creación
+Código de barra
 
-🗑️ Eliminar pasajero con confirmación previa
+Nombre del pasajero
 
-🔒 Acceso exclusivo para empleados autenticados
+Documento
 
-📋 Detalle completo del pasajero con todos sus datos de contacto
+Vuelo
+
+Fecha de salida
+
+Precio
+
+Estado del boleto
+
+🔍 Verificación de boletos: los empleados pueden verificar si un boleto es válido y cambiar su estado de “emitido” a “verificado” o “confirmado”.
+
+🎨 Diseño moderno tipo “ticket” con colores según el estado.
+
+🔒 Acceso exclusivo para empleados autenticados.
+
+🖥️ Interfaz responsive y clara, optimizada para desktops y tablets.
 
 📁 Estructura de archivos y carpetas
 gestion/
 ├── migrations/
 ├── templates/
-│ └── empleados/
-│ └── pasajeros/
-│ ├── detalle.html
-│ ├── eliminar.html
-│ ├── formulario.html
-│ └── lista.html
+│   └── empleados/
+│       └── boletos/
+│           ├── lista_boletos.html
+│           └── verificar_boleto.html
 ├── static/
-│ └── (archivos estáticos: CSS, JS, imágenes)
+│   └── (CSS, JS, imágenes, etc.)
 ├── forms.py
 ├── models.py
 ├── urls.py
@@ -34,60 +46,68 @@ gestion/
 
 🔗 URLs principales
 Ruta	Vista	Descripción
-/pasajeros/	lista_pasajeros	Lista de todos los pasajeros
-/pasajeros/nuevo/	nuevo_pasajero	Crear un nuevo pasajero
-/pasajeros/<id>/editar/	editar_pasajero	Editar datos de un pasajero existente
-/pasajeros/<id>/eliminar/	eliminar_pasajero	Confirmar y eliminar un pasajero
-/pasajeros/<id>/	detalle_pasajero	Ver detalle completo del pasajero
-
+/gestion/empleados/boletos/	lista_boletos_empleado	Lista todos los boletos disponibles
+/gestion/empleados/boletos/verificar/<codigo>/	verificar_boleto_empleado	Verifica un boleto específico y cambia su estado
 🗃️ Modelo principal (models.py)
-Pasajero
-usuario (opcional) → relación con el usuario autenticado
 
-nombre, documento, email, telefono
+Boleto
 
-fecha_nacimiento, tipo_documento (DNI, Pasaporte, Otro)
+reserva → relación con la reserva del pasajero
 
-Método __str__() para mostrar el nombre en interfaces y listas
+codigo_barra → código único del boleto
+
+estado → emitido, verificado, etc.
+
+Método __str__() para mostrar el código de manera legible
+
+Reserva
+
+Información del pasajero, vuelo, asientos y precio
+
+Estado de la reserva
 
 ⚙️ Lógica y flujo de trabajo
-Autenticación obligatoria para todas las operaciones
 
-Validaciones de formulario para datos completos y correctos
+Los empleados deben estar autenticados para acceder al módulo.
 
-Edición y creación usan el mismo formulario (formulario.html)
+Los boletos se listan en cards visuales tipo ticket para mejorar la experiencia.
 
-Eliminación solicita confirmación antes de borrar el registro
+Al verificar un boleto:
 
-Acceso restringido solo a personal autorizado
+Se valida que esté emitido y la reserva esté confirmada.
+
+El estado del boleto se actualiza a verificado.
+
+Todas las operaciones tienen feedback visual mediante alertas o cambios de color según estado.
 
 🖥️ Frontend y experiencia de usuario
-Interfaz clara y responsive con Bootstrap
 
-Listado con tabla o grid según necesidad
+Diseño moderno con Bootstrap y estilos tipo ticket.
 
-Formulario de creación/edición con campos obligatorios destacados
+Colores y badges para diferenciar estados de boletos.
 
-Alertas y mensajes para feedback inmediato
+Botón Verificar en cada boleto para un acceso rápido.
 
-Confirmación visual al eliminar un pasajero
+Lista responsive que se ajusta a diferentes tamaños de pantalla.
 
 📦 Cómo poner en marcha este módulo
-Asegurarse de tener el proyecto principal clonado y virtualenv activado
 
-Ejecutar migraciones si hay cambios en Pasajero:
+Asegurarse de tener el proyecto principal clonado y virtualenv activado.
 
-bash
-Copiar código
+Ejecutar migraciones si hay cambios en Boleto o Reserva:
+
 python manage.py makemigrations gestion
 python manage.py migrate
+
+
 Levantar servidor local:
 
-bash
-Copiar código
 python manage.py runserver
-Acceder a: http://localhost:8000/pasajeros/ para ver el listado
+
+
+Acceder a: http://localhost:8000/gestion/empleados/boletos/ para ver la lista de boletos.
 
 👨‍💻 Autor
+
 Agustín Fasano
 Estudiante de Desarrollo de Software en ITEC

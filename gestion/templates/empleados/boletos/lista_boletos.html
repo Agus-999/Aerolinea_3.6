@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Boletos</h2>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for boleto in boletos %}
+    <div class="col">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Código: {{ boleto.codigo_barra }}</span>
+                <span class="badge 
+                    {% if boleto.estado == 'emitido' %}bg-warning
+                    {% elif boleto.estado == 'verificado' %}bg-success
+                    {% else %}bg-secondary{% endif %}">
+                    {{ boleto.estado|capfirst }}
+                </span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ boleto.reserva.pasajero.nombre }}</h5>
+                <p class="card-text">
+                    <strong>Documento:</strong> {{ boleto.reserva.pasajero.documento }}<br>
+                    <strong>Vuelo:</strong> {{ boleto.reserva.vuelo.codigo_vuelo }}<br>
+                    <strong>Salida:</strong> {{ boleto.reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}<br>
+                    <strong>Precio:</strong> ${{ boleto.reserva.precio }}
+                </p>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{% url 'gestion:verificar_boleto_empleado' boleto.codigo_barra %}" 
+                   class="btn btn-sm btn-primary">
+                   Verificar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <div class="alert alert-info text-center">
+            No hay boletos registrados.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.card-header { font-size: 0.9rem; }
+.card-title { font-size: 1.1rem; }
+.card-text { font-size: 0.95rem; }
+.card-footer { background-color: #f8f9fa; }
+</style>
+{% endblock %}

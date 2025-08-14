@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Eliminar Reserva</h2>
+<p>¿Estás seguro de que quieres eliminar la reserva del pasajero <strong>{{ reserva.pasajero.nombre }}</strong> en el vuelo <strong>{{ reserva.vuelo }}</strong>?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+  <a href="{% url 'gestion:detalle_reserva_empleado' reserva.id %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Reservas de Clientes</h2>
+<a href="{% url 'gestion:crear_reserva_empleado' %}" class="btn btn-success mb-3">Crear nueva reserva</a>
+
+{% if reservas %}
+<div class="reservas-lista" style="display:flex; flex-wrap:wrap; gap:20px;">
+    {% for reserva in reservas %}
+    <a href="{% url 'gestion:detalle_reserva_empleado' reserva.id %}" class="reserva-card" style="border:1px solid #ccc; border-radius:12px; padding:20px; width:300px; text-decoration:none; color:#333;">
+        <h4>Vuelo: {{ reserva.vuelo }}</h4>
+        <p>Fecha vuelo: {{ reserva.vuelo.fecha_salida|date:"d/m/Y H:i" }}</p>
+        <p>Pasajero: {{ reserva.pasajero.nombre }}</p>
+        <p>Precio: ${{ reserva.precio|default:"0.00" }}</p>
+        <p>Estado: {{ reserva.get_estado_display }}</p>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p>No hay reservas aún.</p>
+{% endif %}
+{% endblock %}

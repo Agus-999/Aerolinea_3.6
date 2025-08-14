@@ -84,3 +84,20 @@ class PasajeroForm(forms.ModelForm):
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+from django import forms
+from .models import Reserva
+
+class ReservaEmpleadoForm(forms.ModelForm):
+    """
+    Formulario exclusivo para empleados para crear/editar reservas
+    sin tocar el precio directamente ni seleccionar pasajeros existentes.
+    """
+    class Meta:
+        model = Reserva
+        fields = ['vuelo', 'estado']  # quitamos 'pasajero' y 'precio'
+        widgets = {
+            'vuelo': forms.Select(attrs={'class': 'form-control'}),
+            'estado': forms.Select(attrs={'class': 'form-control'}),
+        }
