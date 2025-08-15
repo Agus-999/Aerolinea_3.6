@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.container {
+    max-width: 1200px;
+}
+
+h2 {
+    font-weight: 700;
+    color: #0d6efd;
+    text-align: center;
+}
+
+/* Card de filtros */
+.card {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Inputs y selects */
+.form-control, .form-select {
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+/* Botón */
+.btn-primary {
+    background-color: #0d6efd;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+/* Tabla */
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+/* Colores según estado */
+.table-success {
+    background-color: #d1e7dd !important;
+}
+
+.table-danger {
+    background-color: #f8d7da !important;
+}
+
+.estado-checkbox {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* Flex filtros */
+.filtros-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filtros-row .col, .filtros-row .col-auto {
+    flex: 1 1 auto;
+}
+</style>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Panel de Asientos - Empleados</h2>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm">
+        <form method="get" class="filtros-row align-items-end">
+            <div class="col">
+                <label class="form-label fw-bold">Avión</label>
+                <select name="avion" class="form-select">
+                    <option value="">Todos los aviones</option>
+                    {% for id, modelo in aviones %}
+                    <option value="{{ id }}" {% if filtros.avion == id|stringformat:"s" %}selected{% endif %}>{{ modelo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="disponible" {% if filtros.estado == 'disponible' %}selected{% endif %}>Disponible</option>
+                    <option value="ocupado" {% if filtros.estado == 'ocupado' %}selected{% endif %}>Ocupado</option>
+                </select>
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">Fila</label>
+                <input type="number" name="fila" min="1" class="form-control" placeholder="Fila" value="{{ filtros.fila }}">
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">Columna</label>
+                <input type="number" name="columna" min="1" class="form-control" placeholder="Columna" value="{{ filtros.columna }}">
+            </div>
+            <div class="col">
+                <label class="form-label fw-bold">Buscar</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Número de asiento..." value="{{ filtros.buscar }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Asientos -->
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle text-center">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Fila</th>
+                    <th>Columna</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Precio</th>
+                    <th>Avión</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asiento in asientos %}
+                <tr class="{% if asiento.estado == 'ocupado' %}table-danger{% else %}table-success{% endif %}">
+                    <td class="fw-bold">{{ asiento.numero }}</td>
+                    <td>{{ asiento.fila }}</td>
+                    <td>{{ asiento.columna }}</td>
+                    <td>{{ asiento.tipo|title }}</td>
+                    <td>
+                        <input type="checkbox" class="estado-checkbox" data-id="{{ asiento.id }}" {% if asiento.estado == 'ocupado' %}checked{% endif %}>
+                    </td>
+                    <td>${{ asiento.precio }}</td>
+                    <td>{{ asiento.avion.modelo }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No hay asientos disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.estado-checkbox').change(function() {
+        var checkbox = $(this);
+        var asientoId = checkbox.data('id');
+        var nuevoEstado = checkbox.is(':checked') ? 'ocupado' : 'disponible';
+
+        $.ajax({
+            url: "{% url 'gestion:cambiar_estado_asiento' %}",
+            method: "POST",
+            data: {
+                'asiento_id': asientoId,
+                'estado': nuevoEstado,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if(response.estado == 'ocupado') {
+                    checkbox.closest('tr').removeClass('table-success').addClass('table-danger');
+                } else {
+                    checkbox.closest('tr').removeClass('table-danger').addClass('table-success');
+                }
+            },
+            error: function() {
+                alert("Ocurrió un error al cambiar el estado.");
+                checkbox.prop('checked', !checkbox.prop('checked'));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

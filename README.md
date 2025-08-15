@@ -1,111 +1,143 @@
-📧 Envío de Boletos por Correo – Módulo Automático
+🛫 Reporte de Reservas y Gestión de Asientos – Módulo para Empleados
 
-Un módulo del sistema de gestión de vuelos desarrollado en Django, que envía automáticamente por correo electrónico el boleto de vuelo al pasajero una vez confirmada su reserva.
+Un módulo del sistema de gestión de vuelos desarrollado en Django, diseñado para que los empleados puedan visualizar todas las reservas, filtrar por vuelo o pasajero y ver los asientos asignados de manera clara, incluyendo las reservas que todavía no tienen asientos asignados.
 
 🚀 Funcionalidades principales
+📊 Reporte de Reservas
 
-📩 Generación automática de boletos en HTML con datos completos de la reserva:
+Visualización de todas las reservas con información detallada:
 
-Nombre y datos de contacto del pasajero
+Vuelo (origen, destino y fecha)
 
-Código de boleto y código de reserva
+Pasajero (nombre y documento)
 
-Origen, destino, fecha y hora de vuelo
+Asientos asignados (si los tiene)
 
-Lista de asientos asignados con su tipo y precio
+Estado de la reserva (Confirmada, Pendiente, Ocupado)
 
-Precio total de la reserva
+Fecha de reserva
 
-📨 Envío automático del correo electrónico al email del pasajero después de completar la compra.
+Precio total
 
-💡 Plantilla HTML personalizada con diseño claro y ordenado para una mejor experiencia del pasajero.
+Filtrado de reservas por:
 
-🔄 Adaptación dinámica del contenido del mail para mostrar correctamente los precios de los asientos según su tipo (económico, ejecutivo, primera clase, premium, etc.).
+Vuelo
+
+Nombre del pasajero
+
+Detección de reservas sin asientos asignados, mostrando “No asignado” para estas.
+
+💺 Gestión de Asientos
+
+Las reservas que tienen asientos asignados muestran los números correspondientes.
+
+Las reservas pendientes o sin asignación de asientos se identifican claramente en el reporte.
+
+Evita duplicados de reservas cuando se usan filtros o se listan varias relaciones ManyToMany de asientos.
 
 📁 Estructura de archivos y carpetas
-
 gestion/
 ├── templates/
-│   └── boletos/
-│       └── boleto_email.html   # Plantilla HTML del correo
-├── utils/
-│   └── enviar_boleto.py        # Función para generar y enviar el mail
-├── models.py                   # Modelos de Reserva, Asiento y Boleto
-├── views.py                    # Lógica para disparar el envío del mail
+│   └── empleados/
+│       └── reservas/
+│           └── reporte_reservas.html   # Plantilla HTML del reporte
+├── models.py                             # Modelos Reserva, Vuelo, Asiento
+├── views.py                              # Lógica de la vista reporte_reservas
 
+🔗 Flujo de reporte
 
-🔗 Flujo de envío de correo
+El empleado accede a la sección de Reporte de Reservas en el sistema.
 
-El pasajero realiza la reserva en el sistema.
+La vista reporte_reservas obtiene todas las reservas y sus relaciones (vuelo, pasajero, usuario y asientos).
 
-Una vez confirmada, se generan:
+Se aplican filtros opcionales por vuelo o nombre del pasajero.
 
-Datos de la reserva
+La plantilla HTML muestra:
 
-Lista de asientos con tipo y precio (usando el diccionario PRECIOS_ASIENTO)
+Todos los datos de la reserva
 
-Se renderiza la plantilla boleto_email.html con todos los datos.
+Asientos asignados o “No asignado” si la reserva no tiene asientos
 
-Se envía el correo usando la función send_mail de Django, con el HTML embebido.
+Estado y precio
 
-El pasajero recibe su boleto directamente en su bandeja de entrada.
+Los empleados pueden ver rápidamente cuáles reservas necesitan asignación de asientos y cuáles están confirmadas.
 
 🗃️ Modelo de datos utilizado (models.py)
-
 Reserva
-Contiene información del pasajero, vuelo, asientos y precio total.
+
+Información del pasajero, vuelo y estado.
+
+Relación ManyToMany con Asiento.
+
+Precio total de la reserva.
 
 Asiento
-Guarda número, tipo y precio (obtenido desde PRECIOS_ASIENTO según el tipo).
 
-Boleto
-Código único, relación con la reserva y estado del boleto.
+Número de asiento
+
+Relación con la reserva
+
+Puede no estar asignado a algunas reservas pendientes.
+
+Vuelo
+
+Origen y destino
+
+Fecha y hora de salida
+
+Relación con reservas existentes
 
 ⚙️ Lógica y flujo de trabajo
 
-El sistema obtiene los asientos asignados de la reserva.
+Se utilizan select_related y prefetch_related para optimizar la carga de datos de relaciones.
 
-Cada asiento es mostrado con:
+El reporte detecta automáticamente reservas sin asientos asignados.
 
-Número
+La plantilla HTML es dinámica, mostrando claramente los datos de cada reserva.
 
-Tipo
+El filtro de vuelo utiliza los objetos Vuelo reales para mostrar origen, destino y fecha.
 
-Precio según PRECIOS_ASIENTO
+Las reservas duplicadas por asientos M2M se eliminan con .distinct().
 
-Si es premium, económico, primera, etc., el valor se calcula automáticamente.
+🖥️ Frontend y experiencia del empleado
 
-El email se genera como HTML y se envía usando configuración SMTP de Django.
+Plantilla HTML optimizada para lectura rápida en escritorio.
 
-🖥️ Frontend y experiencia del pasajero
+Tabla con columnas:
 
-Plantilla HTML optimizada para lectura en clientes de correo.
+Vuelo
 
-Tabla con los asientos asignados y precios.
+Pasajero
 
-Estilo claro, con secciones separadas para:
+Documento
 
-Datos del pasajero
+Asientos
 
-Datos de la reserva
+Estado
 
-Datos del vuelo
+Fecha de reserva
 
-Asientos y precios
+Precio
 
-Mensaje final de agradecimiento.
+Estilo claro y moderno, con colores que diferencian estados de reserva.
+
+Filtros fáciles de usar para agilizar la búsqueda de reservas específicas.
 
 📦 Cómo poner en marcha este módulo
 
-Configurar en settings.py las credenciales SMTP para envío de mails.
+Asegurarse que las relaciones Reserva → Asiento → Vuelo → Pasajero estén correctamente definidas en models.py.
 
-Crear la plantilla boleto_email.html dentro de templates/boletos/.
+Colocar la plantilla reporte_reservas.html en templates/empleados/reservas/.
 
-Definir el diccionario PRECIOS_ASIENTO con los precios por tipo.
+Configurar las rutas en urls.py para que los empleados puedan acceder al reporte.
 
-Llamar a la función enviar_boleto_email(reserva) desde la vista que confirma la reserva.
+Ejecutar el servidor con python manage.py runserver y verificar:
 
-Probar con python manage.py runserver y realizar una reserva para verificar el envío.
+Listado de reservas
+
+Filtro por vuelo y pasajero
+
+Visualización correcta de asientos asignados o “No asignado” cuando corresponde
 
 👨‍💻 Autor
 

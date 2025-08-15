@@ -31,6 +31,14 @@ urlpatterns = [
     path('empleados/boletos/', views.lista_boletos_empleado, name='lista_boletos_empleado'),
     path('empleados/boletos/verificar/<str:codigo>/', views.verificar_boleto_empleado, name='verificar_boleto_empleado'),
 
+    path('empleados/asientos/', views.panel_asientos_empleados, name='panel_asientos_empleados'),
+    path('empleados/asientos/cambiar_estado/', views.cambiar_estado_asiento, name='cambiar_estado_asiento'),
+    
+    path('empleados/asientos/', views.panel_asientos_empleados, name='panel_asientos_empleados'),
+    path('empleados/asientos/cambiar_estado/', views.cambiar_estado_asiento, name='cambiar_estado_asiento'),
+    path('empleados/reservas/', views.lista_reservas_empleado, name='lista_reservas_empleado'),
+    path('empleados/reporte_reservas/', views.reporte_reservas, name='reporte_reservas'),  # <- NUEVA
+
    # CLIENTES
     path('clientes/vuelos/', views.vuelos_clientes_lista, name='vuelos_clientes_lista'),
     path('clientes/vuelos/<int:pk>/', views.vuelos_clientes_detalle, name='vuelos_clientes_detalle'),

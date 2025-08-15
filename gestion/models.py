@@ -150,6 +150,7 @@ class Reserva(models.Model):
         with transaction.atomic():
             self.liberar_asientos()
             super().delete(*args, **kwargs)
+            
 # ----------------------------
 # BOLETO
 # ----------------------------

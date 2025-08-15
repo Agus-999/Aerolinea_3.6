@@ -19,6 +19,9 @@
                 <a href="{% url 'gestion:lista_pasajeros' %}">Gestión Pasajeros</a>
                 <a href="{% url 'gestion:lista_reservas_empleado' %}">Gestión Reservas</a>
                 <a href="{% url 'gestion:lista_boletos_empleado' %}">Gestión Boletos</a>
+                <a href="{% url 'gestion:panel_asientos_empleados' %}" class="btn btn-secondary">Panel de Asientos</a>
+                <a href="{% url 'gestion:reporte_reservas' %}" class="btn btn-info">Reporte de Reservas</a>
+
             {% endif %}
 
             {% if user.rol == "cliente" %}
