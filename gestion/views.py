@@ -435,6 +435,126 @@ def verificar_boleto_empleado(request, codigo):
     })
 
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from decimal import Decimal
+from gestion.models import Asiento
+
+def es_empleado(user):
+    return hasattr(user, 'rol') and user.rol == 'empleado'
+
+# Precios por tipo de asiento
+PRECIOS_ASIENTO = {
+    'economico': Decimal('100.00'),
+    'premium': Decimal('200.00'),
+    'ejecutivo': Decimal('300.00'),
+    'primera': Decimal('400.00'),
+}
+
+@login_required
+@user_passes_test(es_empleado)
+def panel_asientos_empleados(request):
+    asientos_qs = Asiento.objects.select_related('avion').all()
+
+    # Filtros desde GET
+    avion_id = request.GET.get('avion')
+    estado = request.GET.get('estado')
+    fila = request.GET.get('fila')
+    columna = request.GET.get('columna')
+    buscar = request.GET.get('buscar')
+
+    if avion_id:
+        asientos_qs = asientos_qs.filter(avion_id=avion_id)
+    if estado:
+        asientos_qs = asientos_qs.filter(estado=estado)
+    if fila:
+        asientos_qs = asientos_qs.filter(fila=fila)
+    if columna:
+        asientos_qs = asientos_qs.filter(columna=columna)
+    if buscar:
+        asientos_qs = asientos_qs.filter(numero__icontains=buscar)
+
+    asientos = []
+    for asiento in asientos_qs:
+        # Extraemos solo el número del asiento para ordenar
+        numero_str = ''.join(filter(str.isdigit, asiento.numero))
+        try:
+            numero_int = int(numero_str)
+        except ValueError:
+            numero_int = 0
+
+        asiento.numero_int = numero_int
+        asiento.precio = PRECIOS_ASIENTO.get(asiento.tipo, Decimal('0.00'))
+        asientos.append(asiento)
+
+    # Ordenamos solo por número
+    asientos.sort(key=lambda a: a.numero_int)
+
+    context = {
+        'asientos': asientos,
+        'aviones': Asiento.objects.values_list('avion__id', 'avion__modelo').distinct(),
+        'filtros': request.GET
+    }
+    return render(request, 'empleados/asientos/panel_asientos.html', context)
+
+@login_required
+@user_passes_test(es_empleado)
+def cambiar_estado_asiento(request):
+    if request.method == 'POST':
+        asiento_id = request.POST.get('asiento_id')
+        nuevo_estado = request.POST.get('estado')
+        asiento = get_object_or_404(Asiento, id=asiento_id)
+
+        if nuevo_estado in ['disponible', 'ocupado']:
+            asiento.estado = nuevo_estado
+            asiento.save()
+            return JsonResponse({'estado': asiento.estado})
+
+        return JsonResponse({'error': 'Estado inválido'}, status=400)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=400)
+
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
+from gestion.models import Reserva, Vuelo
+
+def es_empleado(user):
+    return hasattr(user, 'rol') and user.rol == 'empleado'
+
+@login_required
+@user_passes_test(es_empleado)
+def reporte_reservas(request):
+    # Todas las reservas con relaciones necesarias
+    reservas = Reserva.objects.select_related('vuelo', 'pasajero', 'usuario').prefetch_related('asientos').all()
+
+    # Filtros
+    vuelo_id = request.GET.get('vuelo')
+    buscar = request.GET.get('buscar')
+
+    if vuelo_id:
+        reservas = reservas.filter(vuelo_id=vuelo_id)
+    if buscar:
+        reservas = reservas.filter(pasajero__nombre__icontains=buscar)
+
+    reservas = reservas.distinct()
+
+    # Obtener lista de vuelos disponibles
+    vuelos_qs = Vuelo.objects.filter(reservas__isnull=False).distinct()
+    vuelos = [(v.id, f"{v.origen} → {v.destino} | {v.fecha_salida}") for v in vuelos_qs]
+
+    context = {
+        'reservas': reservas,
+        'filtros': {
+            'vuelo': vuelo_id or '',
+            'buscar': buscar or '',
+        },
+        'vuelos': vuelos,
+    }
+    return render(request, 'empleados/reservas/reporte_reservas.html', context)
+
+
 
 
 # CLIENTES
